@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
+import Provider from "./provider";
+import { colors } from "./_constants/color";
 
 export const metadata: Metadata = {
   title: "Trung tâm quản lý phim Nhật Lãng",
@@ -14,8 +16,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased min-h-screen">
-        {children}
+      <body
+        className="antialiased min-h-screen"
+        style={{ backgroundColor: colors.background }}
+      >
+        <Provider>{children}</Provider>
         <Toaster
           position="top-center"
           gutter={12}
