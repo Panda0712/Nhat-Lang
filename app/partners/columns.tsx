@@ -1,6 +1,18 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
+import { MoreHorizontal } from "lucide-react";
+import { ArrowUpDown } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
 import Image from "next/image";
 
 export type Partner = {
@@ -14,7 +26,17 @@ export const columns: ColumnDef<Partner>[] = [
   { accessorKey: "id", header: "Mã đối tác" },
   {
     accessorKey: "name",
-    header: "Tên đối tác",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Tên đối tác
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
   },
   {
     accessorKey: "type",
@@ -34,5 +56,25 @@ export const columns: ColumnDef<Partner>[] = [
         />
       </div>
     ),
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => {
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem>Chỉnh sửa thông tin</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>Xóa đối</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    },
   },
 ];

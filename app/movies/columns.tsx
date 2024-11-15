@@ -1,6 +1,17 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
+import { ArrowUpDown } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { extractYear } from "../_lib/helpers";
 import Image from "next/image";
 
@@ -29,7 +40,17 @@ export const columns: ColumnDef<Movie>[] = [
   { accessorKey: "id", header: "Mã phim" },
   {
     accessorKey: "name",
-    header: "Tên",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Tên
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
     cell: ({ row }) => (
       <div className="flex items-center gap-x-3">
         <div className="relative w-[50px] h-[70px]">
@@ -65,5 +86,27 @@ export const columns: ColumnDef<Movie>[] = [
     accessorKey: "created",
     header: "Năm",
     cell: ({ row }) => <span>{extractYear(row.original.created)}</span>,
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => {
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button className="h-8 w-8 p-0 border-none outline-none">
+              <span className="sr-only">Mở menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem>Xem thông tin</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>Chỉnh sửa phim</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>Xóa phim</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    },
   },
 ];
