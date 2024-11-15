@@ -28,7 +28,7 @@ export const columns: ColumnDef<Partner>[] = [
         <Image
           src={row.original.thumb_image}
           alt="Hình ảnh đối tác"
-          layout="fill"
+          fill
           objectFit="cover"
           className="rounded-md"
         />

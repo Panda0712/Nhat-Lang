@@ -29,7 +29,7 @@ const page = () => {
           <Image
             src="/home-background2.jpg"
             className="rounded-md"
-            layout="fill"
+            fill
             quality={100}
             alt="homescreen-background"
           />
@@ -45,7 +45,7 @@ const page = () => {
             <div className="relative w-[300px] h-[350px]">
               <Image
                 src="/feature-thumb.jpg"
-                layout="fill"
+                fill
                 alt="feature-movie-thumb"
                 className="rounded-md"
               />
@@ -56,7 +56,7 @@ const page = () => {
             <div className="relative w-[300px] h-[350px]">
               <Image
                 src="/science-thumb.jpg"
-                layout="fill"
+                fill
                 alt="feature-movie-thumb"
                 className="rounded-md"
               />
@@ -67,7 +67,7 @@ const page = () => {
             <div className="relative w-[300px] h-[350px]">
               <Image
                 src="/music-thumb.jpg"
-                layout="fill"
+                fill
                 className="rounded-md"
                 alt="feature-movie-thumb"
               />
@@ -78,7 +78,7 @@ const page = () => {
             <div className="relative w-[300px] h-[350px]">
               <Image
                 src="/thretical-thumb.jpg"
-                layout="fill"
+                fill
                 alt="feature-movie-thumb"
                 className="rounded-md"
               />

@@ -75,3 +75,15 @@ export const getPartners = async () => {
 
   return { partners, error };
 };
+
+export const getMovies = async () => {
+  const { data: movies, error } = await supabase.from("movies").select("*");
+
+  if (error) {
+    console.log(error.message);
+    toast.error(error.message);
+    throw new Error("Lấy dữ liệu phim thất bại!");
+  }
+
+  return { movies, error };
+};
