@@ -1,6 +1,7 @@
 import { RegisterSchema } from "@/schemas";
 import supabase from "./supabase";
 import * as z from "zod";
+import toast from "react-hot-toast";
 
 export const getUserByEmail = async (email: string) => {
   try {
@@ -10,6 +11,7 @@ export const getUserByEmail = async (email: string) => {
       .eq("email", email);
 
     if (error) {
+      toast.error(error.message);
       throw new Error("Lỗi lấy dữ liệu người dùng:", error);
     }
 
@@ -29,8 +31,47 @@ export const insertNewUser = async (
 
   if (error) {
     console.log(error.message);
+    toast.error(error.message);
     throw new Error("Tạo tài khoản mới thất bại");
   }
 
   return { data, error };
+};
+
+export const getStaffs = async () => {
+  const { data: staff, error } = await supabase.from("staff").select("*");
+
+  if (error) {
+    console.log(error.message);
+    toast.error(error.message);
+    throw new Error("Lấy dữ liệu nhân viên thất bại!");
+  }
+
+  return { staff, error };
+};
+
+export const getCustomers = async () => {
+  const { data: customers, error } = await supabase
+    .from("customers")
+    .select("*");
+
+  if (error) {
+    console.log(error.message);
+    toast.error(error.message);
+    throw new Error("Lấy dữ liệu khách hàng thất bại!");
+  }
+
+  return { customers, error };
+};
+
+export const getPartners = async () => {
+  const { data: partners, error } = await supabase.from("partners").select("*");
+
+  if (error) {
+    console.log(error.message);
+    toast.error(error.message);
+    throw new Error("Lấy dữ liệu đối tác thất bại!");
+  }
+
+  return { partners, error };
 };

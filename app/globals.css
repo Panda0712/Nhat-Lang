@@ -5,7 +5,7 @@
 @tailwind utilities;
 
 body {
-  font-family: "Oswald", sans-serif;
+  @apply font-sans;
 }
 
 @layer base {
