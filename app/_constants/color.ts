@@ -5,5 +5,7 @@ export const colors = {
   grey2: "#dcdcdc",
   white: "#ffffff",
   blue: "#38bdf8",
+  instagram: "#c13584",
   facebook: "#4267B2",
+  youtube: "#FF0000",
 };
