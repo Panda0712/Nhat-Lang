@@ -168,6 +168,11 @@ export function DataTable<TData, TValue>({
       </div>
 
       <div className="flex items-center justify-end space-x-2 py-4">
+        <div className="flex-1 text-sm text-white font-medium">
+          Trang {table.getState().pagination.pageIndex + 1} /{" "}
+          {table.getPageCount()} | Tổng{" "}
+          {table.getFilteredRowModel().rows.length} Kết quả
+        </div>
         <Button
           className="text-black"
           variant="outline"

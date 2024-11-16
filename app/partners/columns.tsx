@@ -23,7 +23,7 @@ export type Partner = {
 };
 
 export const columns: ColumnDef<Partner>[] = [
-  { accessorKey: "id", header: "Mã đối tác" },
+  { accessorKey: "id", header: "Mã" },
   {
     accessorKey: "name",
     header: ({ column }) => {
@@ -32,7 +32,7 @@ export const columns: ColumnDef<Partner>[] = [
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Tên đối tác
+          <span className="text-lg">Tên</span>
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );

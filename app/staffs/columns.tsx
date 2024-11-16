@@ -21,7 +21,7 @@ export type Staff = {
 };
 
 export const columns: ColumnDef<Staff>[] = [
-  { accessorKey: "id", header: "Mã nhân viên" },
+  { accessorKey: "id", header: "Mã" },
   {
     accessorKey: "name",
     header: ({ column }) => {
@@ -30,7 +30,7 @@ export const columns: ColumnDef<Staff>[] = [
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Họ tên
+          <span className="text-lg">Tên</span>
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );

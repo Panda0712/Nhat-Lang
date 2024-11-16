@@ -21,7 +21,7 @@ export type Customer = {
 };
 
 export const columns: ColumnDef<Customer>[] = [
-  { accessorKey: "id", header: "Mã khách hàng" },
+  { accessorKey: "id", header: "Mã" },
   {
     accessorKey: "name",
     header: ({ column }) => {
@@ -30,7 +30,7 @@ export const columns: ColumnDef<Customer>[] = [
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Tên khách hàng
+          <span className="text-lg">Tên</span>
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );

@@ -67,6 +67,16 @@ body {
     background-color: transparent !important;
   }
 
+  .button-row:hover {
+    opacity: 0.8 !important;
+    background-color: rgb(148 163 184 / var(--tw-bg-opacity)) !important;
+  }
+
+  .button2-row:hover {
+    opacity: 0.8 !important;
+    background-color: rgb(220 38 38 / var(--tw-bg-opacity)) !important;
+  }
+
   .table-row:hover {
     background-color: transparent !important;
   }

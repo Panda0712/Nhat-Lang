@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { RegisterSchema } from "@/schemas";
 import supabase from "./supabase";
 import * as z from "zod";
@@ -77,7 +78,10 @@ export const getPartners = async () => {
 };
 
 export const getMovies = async () => {
-  const { data: movies, error } = await supabase.from("movies").select("*");
+  const { data: movies, error } = await supabase
+    .from("movies")
+    .select("*")
+    .order("modified", { ascending: false });
 
   if (error) {
     console.log(error.message);
@@ -86,4 +90,45 @@ export const getMovies = async () => {
   }
 
   return { movies, error };
+};
+
+export const getMovieById = async (id: string) => {
+  const { data: movie, error } = await supabase
+    .from("movies")
+    .select("*")
+    .eq("id", Number(id));
+
+  if (error) {
+    console.log(error.message);
+    toast.error(error.message);
+    throw new Error("Lấy dữ liệu phim theo id thất bại!");
+  }
+
+  return { movie, error };
+};
+
+export const updateMovie = async (movieData: any, movieId: number) => {
+  const { data: updatedMovie, error } = await supabase
+    .from("movies")
+    .update(movieData)
+    .eq("id", movieId)
+    .select();
+
+  if (error) {
+    console.log(error.message);
+    toast.error(error.message);
+    throw new Error("Cập nhật phim thất bại!");
+  }
+
+  return { updatedMovie, error };
+};
+
+export const deleteMovieById = async (id: number) => {
+  const { error } = await supabase.from("movies").delete().eq("id", id);
+
+  if (error) {
+    console.log(error.message);
+    toast.error(error.message);
+    throw new Error("Xóa phim thất bại!");
+  }
 };
