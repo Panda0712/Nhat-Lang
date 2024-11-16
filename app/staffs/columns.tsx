@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
@@ -20,7 +21,15 @@ export type Staff = {
   department: string;
 };
 
-export const columns: ColumnDef<Staff>[] = [
+type TableProps = {
+  onStaffDelete: (staffId: number) => void;
+  onStaffUpdate: (staffId: number, updatedData: any) => void;
+};
+
+export const columns = ({
+  onStaffDelete,
+  onStaffUpdate,
+}: TableProps): ColumnDef<Staff>[] => [
   { accessorKey: "id", header: "Mã" },
   {
     accessorKey: "name",

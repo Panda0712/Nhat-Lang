@@ -1,6 +1,5 @@
 import { getPartners } from "../_lib/action";
-import { columns } from "./columns";
-import { DataTable } from "./data-table";
+import { PartnerClientWrapper } from "./partner-update";
 
 export default async function PartnerPage() {
   const { partners } = await getPartners();
@@ -10,7 +9,7 @@ export default async function PartnerPage() {
       <h1 className="sm:text-2xl text-base mb-12 mx-auto font-semibold text-center uppercase">
         Danh sách đối tác
       </h1>
-      <DataTable columns={columns} data={partners} />
+      <PartnerClientWrapper initialPartners={partners} />
     </div>
   );
 }

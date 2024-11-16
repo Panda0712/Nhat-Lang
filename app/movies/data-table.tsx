@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import * as React from "react";
+import * as z from "zod";
 
 import {
   ColumnDef,
@@ -15,6 +17,30 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -23,23 +49,24 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { MovieSchema } from "@/schemas";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
+import { insertMovie } from "../_lib/action";
+import { formatDateTime } from "../_lib/helpers";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  onDataChange: (newData: TData[]) => void;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  onDataChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -47,6 +74,29 @@ export function DataTable<TData, TValue>({
   );
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [isPending, startTransition] = React.useTransition();
+
+  const form = useForm<z.infer<typeof MovieSchema>>({
+    resolver: zodResolver(MovieSchema),
+    defaultValues: {
+      name: "",
+      slug: "",
+      original_name: "",
+      thumb_url: "",
+      poster_url: "",
+      description: "",
+      total_episodes: undefined,
+      current_episode: "",
+      time: "",
+      quality: "",
+      language: "",
+      director: "",
+      casts: "",
+      category: "",
+      group: "",
+    },
+  });
 
   const table = useReactTable({
     data,
@@ -64,6 +114,25 @@ export function DataTable<TData, TValue>({
       columnVisibility,
     },
   });
+
+  const handleCreateMovie = (values: z.infer<typeof MovieSchema>) => {
+    startTransition(async () => {
+      try {
+        const currentTime = formatDateTime(new Date());
+        values.created = currentTime;
+        values.modified = currentTime;
+
+        const { movie } = await insertMovie(values);
+        onDataChange([movie[0], ...data]);
+
+        toast.success("Phim đã được thêm thành công");
+        setIsModalOpen(false);
+        form.reset();
+      } catch (error: any) {
+        toast.error(error.message);
+      }
+    });
+  };
 
   return (
     <div>
@@ -87,6 +156,12 @@ export function DataTable<TData, TValue>({
           }
           className="max-w-[290px] text-white placeholder:text-[#dcdcdc]"
         />
+        <Button
+          onClick={() => setIsModalOpen(true)}
+          className="mx-4 bg-blue-600 hover:bg-blue-700 text-white"
+        >
+          Thêm phim mới
+        </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto text-black">
@@ -191,6 +266,272 @@ export function DataTable<TData, TValue>({
           Sau
         </Button>
       </div>
+
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="sm:max-w-[525px]">
+          <DialogHeader>
+            <DialogTitle>Thêm phim mới</DialogTitle>
+            <DialogDescription>
+              Nhập thông tin phim mới tại đây. Ấn lưu khi hoàn thành.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(handleCreateMovie)}
+              className="space-x-6 max-h-[400px] overflow-auto"
+            >
+              <div className="space-y-4 mb-16">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tên</FormLabel>
+                      <FormControl>
+                        <Input {...field} disabled={isPending} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="original_name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tên gốc</FormLabel>
+                      <FormControl>
+                        <Input {...field} disabled={isPending} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="slug"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Từ khóa</FormLabel>
+                      <FormControl>
+                        <Input {...field} disabled={isPending} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="thumb_url"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Ảnh phim</FormLabel>
+                      <FormControl>
+                        <Input {...field} disabled={isPending} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="poster_url"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Ảnh poster</FormLabel>
+                      <FormControl>
+                        <Input {...field} disabled={isPending} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nội dung</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          {...field}
+                          disabled={isPending}
+                          className="min-h-[100px]"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="total_episodes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Số tập</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          disabled={isPending}
+                          type="number"
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value
+                                ? Number(e.target.value)
+                                : undefined
+                            )
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="current_episode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Trạng thái</FormLabel>
+                      <FormControl>
+                        <Input {...field} disabled={isPending} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="time"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Thời gian</FormLabel>
+                      <FormControl>
+                        <Input {...field} disabled={isPending} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="quality"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Chất lượng</FormLabel>
+                      <FormControl>
+                        <Input {...field} disabled={isPending} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="language"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Ngôn ngữ</FormLabel>
+                      <FormControl>
+                        <Input {...field} disabled={isPending} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="director"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Đạo diễn</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          value={field.value || ""}
+                          disabled={isPending}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="casts"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Diễn viên</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          value={field.value || ""}
+                          disabled={isPending}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="category"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Danh mục</FormLabel>
+                      <FormControl>
+                        <Input {...field} disabled={isPending} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="group"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Thể loại</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          value={field.value || ""}
+                          disabled={isPending}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <DialogFooter>
+                <Button
+                  className="absolute right-12 bottom-4"
+                  disabled={isPending}
+                  type="submit"
+                >
+                  Thêm phim
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
@@ -20,7 +21,15 @@ export type Customer = {
   contact_info: string;
 };
 
-export const columns: ColumnDef<Customer>[] = [
+type TableProps = {
+  onCustomerDelete: (customerId: number) => void;
+  onCustomerUpdate: (customerId: number, updatedData: any) => void;
+};
+
+export const columns = ({
+  onCustomerDelete,
+  onCustomerUpdate,
+}: TableProps): ColumnDef<Customer>[] => [
   { accessorKey: "id", header: "Mã" },
   {
     accessorKey: "name",

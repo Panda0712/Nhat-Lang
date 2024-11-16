@@ -1,6 +1,5 @@
 import { getStaffs } from "../_lib/action";
-import { columns } from "./columns";
-import { DataTable } from "./data-table";
+import { StaffClientWrapper } from "./staff-update";
 
 export default async function StaffPage() {
   const { staff } = await getStaffs();
@@ -10,7 +9,7 @@ export default async function StaffPage() {
       <h1 className="sm:text-2xl text-base mb-12 mx-auto font-semibold text-center uppercase">
         Danh sách nhân viên
       </h1>
-      <DataTable columns={columns} data={staff} />
+      <StaffClientWrapper initialStaffs={staff} />
     </div>
   );
 }

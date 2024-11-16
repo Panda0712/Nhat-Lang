@@ -66,9 +66,13 @@ export type Movie = {
 
 type TableProps = {
   onMovieDelete: (movieId: number) => void;
+  onMovieUpdate: (movieId: number, updatedData: any) => void;
 };
 
-export const columns = ({ onMovieDelete }: TableProps): ColumnDef<Movie>[] => [
+export const columns = ({
+  onMovieDelete,
+  onMovieUpdate,
+}: TableProps): ColumnDef<Movie>[] => [
   { accessorKey: "id", header: "Mã" },
   {
     accessorKey: "name",
@@ -159,6 +163,14 @@ export const columns = ({ onMovieDelete }: TableProps): ColumnDef<Movie>[] => [
             const updateTime = formatDateTime(new Date());
             values.modified = updateTime;
             await updateMovie(values, row.original.id);
+            onMovieUpdate(row.original.id, {
+              ...values,
+              id: row.original.id,
+              slug: row.original.slug,
+              created: row.original.created,
+              modified: updateTime,
+            });
+
             toast.success("Phim đã được cập nhật thành công!");
             setIsDialogOpen(false);
           } catch (error: any) {

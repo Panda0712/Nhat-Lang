@@ -1,6 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import * as React from "react";
+
+import * as z from "zod";
 
 import {
   ColumnDef,
@@ -31,15 +34,38 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useForm } from "react-hook-form";
+import { PartnerSchema } from "@/schemas";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { insertPartner } from "../_lib/action";
+import toast from "react-hot-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  onDataChange: (newData: TData[]) => void;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  onDataChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -47,6 +73,17 @@ export function DataTable<TData, TValue>({
   );
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [isPending, startTransition] = React.useTransition();
+
+  const form = useForm<z.infer<typeof PartnerSchema>>({
+    resolver: zodResolver(PartnerSchema),
+    defaultValues: {
+      name: "",
+      type: "",
+      thumb_image: "",
+    },
+  });
 
   const table = useReactTable({
     data,
@@ -65,6 +102,21 @@ export function DataTable<TData, TValue>({
     },
   });
 
+  const handleCreatePartner = (values: z.infer<typeof PartnerSchema>) => {
+    startTransition(async () => {
+      try {
+        const { partner } = await insertPartner(values);
+        onDataChange([partner[0], ...data]);
+
+        toast.success("Đối tác đã được thêm thành công");
+        setIsModalOpen(false);
+        form.reset();
+      } catch (error: any) {
+        toast.error(error.message);
+      }
+    });
+  };
+
   return (
     <div>
       <div className="flex items-center py-4">
@@ -76,6 +128,12 @@ export function DataTable<TData, TValue>({
           }
           className="max-w-[200px] placeholder:text-[#dcdcdc]"
         />
+        <Button
+          onClick={() => setIsModalOpen(true)}
+          className="mx-4 bg-blue-600 hover:bg-blue-700 text-white"
+        >
+          Thêm đối tác mới
+        </Button>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -182,6 +240,77 @@ export function DataTable<TData, TValue>({
           Sau
         </Button>
       </div>
+
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="sm:max-w-[525px]">
+          <DialogHeader>
+            <DialogTitle>Thêm đối tác mới</DialogTitle>
+            <DialogDescription>
+              Nhập thông tin đối tác mới tại đây. Ấn lưu khi hoàn thành.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(handleCreatePartner)}
+              className="space-x-6 max-h-[400px] overflow-auto"
+            >
+              <div className="space-y-4 mb-16">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tên</FormLabel>
+                      <FormControl>
+                        <Input {...field} disabled={isPending} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Loại</FormLabel>
+                      <FormControl>
+                        <Input {...field} disabled={isPending} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="thumb_image"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Logo</FormLabel>
+                      <FormControl>
+                        <Input {...field} disabled={isPending} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <DialogFooter>
+                <Button
+                  className="absolute right-12 bottom-4"
+                  disabled={isPending}
+                  type="submit"
+                >
+                  Thêm đối tác
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

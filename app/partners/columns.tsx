@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
@@ -22,7 +23,15 @@ export type Partner = {
   thumb_image: string;
 };
 
-export const columns: ColumnDef<Partner>[] = [
+type TableProps = {
+  onPartnerDelete: (partnerId: number) => void;
+  onPartnerUpdate: (partnerId: number, updatedData: any) => void;
+};
+
+export const columns = ({
+  onPartnerDelete,
+  onPartnerUpdate,
+}: TableProps): ColumnDef<Partner>[] => [
   { accessorKey: "id", header: "Mã" },
   {
     accessorKey: "name",
@@ -51,7 +60,6 @@ export const columns: ColumnDef<Partner>[] = [
           src={row.original.thumb_image}
           alt="Hình ảnh đối tác"
           fill
-          objectFit="cover"
           className="rounded-md"
         />
       </div>

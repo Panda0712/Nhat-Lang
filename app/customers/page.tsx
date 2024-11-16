@@ -1,6 +1,5 @@
 import { getCustomers } from "../_lib/action";
-import { columns } from "./columns";
-import { DataTable } from "./data-table";
+import { CustomerClientWrapper } from "./customer-update";
 
 export default async function CustomerPage() {
   const { customers } = await getCustomers();
@@ -10,7 +9,7 @@ export default async function CustomerPage() {
       <h1 className="sm:text-2xl text-base mb-12 mx-auto font-semibold text-center uppercase">
         Danh sách khách hàng
       </h1>
-      <DataTable columns={columns} data={customers} />
+      <CustomerClientWrapper initialCustomers={customers} />
     </div>
   );
 }

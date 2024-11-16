@@ -18,10 +18,24 @@ export function MovieClientWrapper({ initialMovies }: MovieClientWrapperProps) {
     );
   };
 
+  const handleMovieUpdate = (movieId: number, updatedData: Movie) => {
+    setMovies(
+      movies.map((movie) => (movie.id === movieId ? updatedData : movie))
+    );
+  };
+
+  const handleDataChange = (newData: Movie[]) => {
+    setMovies(newData);
+  };
+
   return (
     <DataTable
-      columns={columns({ onMovieDelete: handleMovieDelete })}
+      columns={columns({
+        onMovieDelete: handleMovieDelete,
+        onMovieUpdate: handleMovieUpdate,
+      })}
       data={movies}
+      onDataChange={handleDataChange}
     />
   );
 }
