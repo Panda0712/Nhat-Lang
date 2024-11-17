@@ -76,16 +76,26 @@ export const StaffSchema = z.object({
   }),
 });
 
+export const CreatePartnerSchema = z.object({
+  name: z.string().min(2, "Tên không được để trống và tối thiểu 2 ký tự"),
+  type: z
+    .string()
+    .min(5, "Loại đối tác không được để trống và tối thiểu 5 ký tự"),
+  thumb_image: z
+    .instanceof(File, { message: "Bạn phải tải lên một file hợp lệ" })
+    .refine((file) => file.size > 0, {
+      message: "Hình ảnh không được để trống",
+    }),
+});
+
 export const PartnerSchema = z.object({
-  name: z.string().min(4, {
+  name: z.string().min(2, {
     message: "Hãy nhập tên và tối thiểu 4 ký tự",
   }),
   type: z.string().min(5, {
     message: "Hãy nhập loại và tối thiểu 5 ký tự",
   }),
-  thumb_image: z.string().min(5, {
-    message: "Hãy nhập ảnh và tối thiểu 5 ký tự",
-  }),
+  thumb_image: z.instanceof(File).optional(),
 });
 
 export const CustomerSchema = z.object({

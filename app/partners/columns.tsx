@@ -97,25 +97,54 @@ export const columns = ({
       const [isDialogOpen, setIsDialogOpen] = useState(false);
       const [isConfirmOpen, setIsConfirmOpen] = useState(false);
       const [isPending, startTransition] = useTransition();
+      const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
       const form = useForm<z.infer<typeof PartnerSchema>>({
         resolver: zodResolver(PartnerSchema),
         defaultValues: {
           name: row.original.name,
           type: row.original.type,
-          thumb_image: row.original.thumb_image,
+          thumb_image: undefined,
         },
       });
+
+      const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          if (!file.type.startsWith("image/")) {
+            toast.error("File phải là định dạng hình ảnh!");
+            return;
+          }
+
+          setSelectedFile(file);
+          form.setValue("thumb_image", file);
+        }
+      };
 
       const handleUpdate = (values: z.infer<typeof PartnerSchema>) => {
         startTransition(async () => {
           try {
-            await updatePartner(values, row.original.id);
+            const updateData = {
+              name: values.name,
+              type: values.type,
+              thumb_image: selectedFile
+                ? {
+                    file: selectedFile,
+                    name: selectedFile.name,
+                    type: selectedFile.type,
+                    size: selectedFile.size,
+                  }
+                : row.original.thumb_image,
+            };
+
+            await updatePartner(updateData, row.original.id);
             onPartnerUpdate(row.original.id, {
               ...values,
               id: row.original.id,
+              thumb_image: selectedFile
+                ? URL.createObjectURL(selectedFile)
+                : row.original.thumb_image,
             });
-
             toast.success("Đối tác đã được cập nhật thành công!");
             setIsDialogOpen(false);
           } catch (error: any) {
@@ -236,9 +265,24 @@ export const columns = ({
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Logo</FormLabel>
-                          <FormControl>
-                            <Input {...field} disabled={isPending} />
-                          </FormControl>
+                          <div className="space-y-2">
+                            <FormControl>
+                              <Input
+                                type="text"
+                                value={row.original.thumb_image}
+                                disabled
+                                className="mb-2"
+                              />
+                            </FormControl>
+                            <FormControl>
+                              <Input
+                                type="file"
+                                onChange={handleFileChange}
+                                disabled={isPending}
+                                accept="image/*"
+                              />
+                            </FormControl>
+                          </div>
                           <FormMessage />
                         </FormItem>
                       )}

@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { RegisterSchema } from "@/schemas";
-import supabase from "./supabase";
+import supabase, { supabaseUrl } from "./supabase";
 import * as z from "zod";
 import toast from "react-hot-toast";
 import { Movie } from "../movies/columns";
 import { Staff } from "../staffs/columns";
-import { Partner } from "../partners/columns";
 import { Customer } from "../customers/columns";
 
 export const getUserByEmail = async (email: string) => {
@@ -92,7 +91,7 @@ export const updateStaff = async (staffData: any, staffId: number) => {
 export const deleteStaffById = async (staffId: number) => {
   const { data: staff, error } = await supabase
     .from("staff")
-    .select("*")
+    .delete()
     .eq("id", Number(staffId));
 
   if (error) {
@@ -178,10 +177,19 @@ export const getPartners = async () => {
   return { partners, error };
 };
 
-export const insertPartner = async (newData: Partner) => {
+export const insertPartner = async (newData: any) => {
+  const hasImagePath = newData.thumb_image?.startsWith?.(supabaseUrl);
+  const imageName = `${Math.random()}-${newData.thumb_image.name}`.replaceAll(
+    "/",
+    ""
+  );
+  const imagePath = hasImagePath
+    ? newData.thumb_image
+    : `${supabaseUrl}/storage/v1/object/public/images/${imageName}`;
+
   const { data: partner, error } = await supabase
     .from("partners")
-    .insert([newData])
+    .insert([{ ...newData, thumb_image: imagePath }])
     .select();
 
   if (error) {
@@ -190,13 +198,32 @@ export const insertPartner = async (newData: Partner) => {
     throw new Error("Thêm đối tác mới thất bại!");
   }
 
+  if (hasImagePath) return { partner, error };
+  const { error: storageError } = await supabase.storage
+    .from("images")
+    .upload(imageName, newData.thumb_image);
+
+  if (storageError) {
+    await supabase.from("partners").delete().eq("id", partner.id);
+    console.log(storageError);
+    throw new Error("Không thể tải ảnh đối tác và đối tác chưa được tạo!");
+  }
+
   return { partner, error };
 };
 
 export const updatePartner = async (partnerData: any, partnerId: number) => {
+  const hasImagePath = partnerData.thumb_image?.startsWith?.(supabaseUrl);
+  const imageName = `${Math.random()}-${
+    partnerData.thumb_image.name
+  }`.replaceAll("/", "");
+  const imagePath = hasImagePath
+    ? partnerData.thumb_image
+    : `${supabaseUrl}/storage/v1/object/public/images/${imageName}`;
+
   const { data: updatedPartner, error } = await supabase
     .from("partners")
-    .update(partnerData)
+    .update({ ...partnerData, thumb_image: imagePath })
     .eq("id", partnerId)
     .select();
 
@@ -204,6 +231,21 @@ export const updatePartner = async (partnerData: any, partnerId: number) => {
     console.log(error.message);
     toast.error(error.message);
     throw new Error("Cập nhật đối tác thất bại!");
+  }
+
+  if (hasImagePath) return { updatePartner, error };
+  const { error: storageError } = await supabase.storage
+    .from("images")
+    .upload(imageName, partnerData.thumb_image, {
+      cacheControl: "3600",
+      upsert: false,
+      contentType: partnerData.thumb_image.type,
+    });
+
+  if (storageError) {
+    await supabase.from("partners").delete().eq("id", partnerData.id);
+    console.log(storageError);
+    throw new Error("Không thể tải ảnh đối tác và đối tác chưa được tạo!");
   }
 
   return { updatedPartner, error };

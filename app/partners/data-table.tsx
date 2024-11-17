@@ -35,7 +35,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
-import { PartnerSchema } from "@/schemas";
+import { CreatePartnerSchema, PartnerSchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertPartner } from "../_lib/action";
 import toast from "react-hot-toast";
@@ -75,15 +75,24 @@ export function DataTable<TData, TValue>({
     React.useState<VisibilityState>({});
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [isPending, startTransition] = React.useTransition();
+  const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
 
-  const form = useForm<z.infer<typeof PartnerSchema>>({
-    resolver: zodResolver(PartnerSchema),
+  const form = useForm<z.infer<typeof CreatePartnerSchema>>({
+    resolver: zodResolver(CreatePartnerSchema),
     defaultValues: {
       name: "",
       type: "",
-      thumb_image: "",
+      thumb_image: undefined,
     },
   });
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      form.setValue("thumb_image", file);
+    }
+  };
 
   const table = useReactTable({
     data,
@@ -105,7 +114,20 @@ export function DataTable<TData, TValue>({
   const handleCreatePartner = (values: z.infer<typeof PartnerSchema>) => {
     startTransition(async () => {
       try {
-        const { partner } = await insertPartner(values);
+        const updateData = {
+          name: values.name,
+          type: values.type,
+          thumb_image: selectedFile
+            ? {
+                file: selectedFile,
+                name: selectedFile.name,
+                type: selectedFile.type,
+                size: selectedFile.size,
+              }
+            : values.thumb_image,
+        };
+
+        const { partner } = await insertPartner(updateData);
         onDataChange([partner[0], ...data]);
 
         toast.success("Đối tác đã được thêm thành công");
@@ -290,7 +312,12 @@ export function DataTable<TData, TValue>({
                     <FormItem>
                       <FormLabel>Logo</FormLabel>
                       <FormControl>
-                        <Input {...field} disabled={isPending} />
+                        <Input
+                          type="file"
+                          onChange={handleFileChange}
+                          disabled={isPending}
+                          accept="image/*"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
