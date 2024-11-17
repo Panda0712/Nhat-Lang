@@ -178,77 +178,104 @@ export const getPartners = async () => {
 };
 
 export const insertPartner = async (newData: any) => {
-  const hasImagePath = newData.thumb_image?.startsWith?.(supabaseUrl);
-  const imageName = `${Math.random()}-${newData.thumb_image.name}`.replaceAll(
-    "/",
-    ""
-  );
-  const imagePath = hasImagePath
-    ? newData.thumb_image
-    : `${supabaseUrl}/storage/v1/object/public/images/${imageName}`;
+  const hasNewFile = newData.thumb_image?.file instanceof File;
+  let imagePath = newData.thumb_image;
 
-  const { data: partner, error } = await supabase
+  if (hasNewFile) {
+    const file = newData.thumb_image.file;
+
+    const fileExt = file.name.split(".").pop();
+    const fileName = `${Math.random()}-${Date.now()}.${fileExt}`.replaceAll(
+      "/",
+      ""
+    );
+
+    const { error: storageError } = await supabase.storage
+      .from("images")
+      .upload(fileName, file, {
+        cacheControl: "3600",
+        upsert: false,
+        contentType: file.type,
+      });
+
+    if (storageError) {
+      console.error("Storage error:", storageError);
+      throw new Error("Không thể tải ảnh đối tác lên storage!");
+    }
+
+    imagePath = `${supabaseUrl}/storage/v1/object/public/images/${fileName}`;
+  }
+
+  const partnerData = {
+    name: newData.name,
+    type: newData.type,
+    thumb_image: imagePath,
+  };
+
+  const { data: partner, error: insertError } = await supabase
     .from("partners")
-    .insert([{ ...newData, thumb_image: imagePath }])
+    .insert([partnerData])
     .select();
 
-  if (error) {
-    console.log(error.message);
-    toast.error(error.message);
+  if (insertError) {
+    if (hasNewFile && imagePath) {
+      const fileName = imagePath.split("/").pop();
+      await supabase.storage.from("images").remove([fileName]);
+    }
+    console.error("Insert error:", insertError);
     throw new Error("Thêm đối tác mới thất bại!");
   }
 
-  if (hasImagePath) return { partner, error };
-  const { error: storageError } = await supabase.storage
-    .from("images")
-    .upload(imageName, newData.thumb_image);
-
-  if (storageError) {
-    await supabase.from("partners").delete().eq("id", partner.id);
-    console.log(storageError);
-    throw new Error("Không thể tải ảnh đối tác và đối tác chưa được tạo!");
-  }
-
-  return { partner, error };
+  return { partner, error: null };
 };
 
 export const updatePartner = async (partnerData: any, partnerId: number) => {
-  const hasImagePath = partnerData.thumb_image?.startsWith?.(supabaseUrl);
-  const imageName = `${Math.random()}-${
-    partnerData.thumb_image.name
-  }`.replaceAll("/", "");
-  const imagePath = hasImagePath
-    ? partnerData.thumb_image
-    : `${supabaseUrl}/storage/v1/object/public/images/${imageName}`;
+  const isExistingImage =
+    typeof partnerData.thumb_image === "string" ||
+    partnerData.thumb_image?.startsWith?.(supabaseUrl);
 
-  const { data: updatedPartner, error } = await supabase
+  let imagePath = partnerData.thumb_image;
+
+  if (!isExistingImage && partnerData.thumb_image?.file instanceof File) {
+    const file = partnerData.thumb_image.file;
+
+    const fileExt = file.name.split(".").pop();
+    const fileName = `${Math.random()}-${Date.now()}.${fileExt}`.replaceAll(
+      "/",
+      ""
+    );
+
+    const { error: storageError } = await supabase.storage
+      .from("images")
+      .upload(fileName, file, {
+        cacheControl: "3600",
+        upsert: false,
+        contentType: file.type,
+      });
+
+    if (storageError) {
+      console.error("Storage error:", storageError);
+      throw new Error("Không thể tải ảnh đối tác lên storage!");
+    }
+
+    imagePath = `${supabaseUrl}/storage/v1/object/public/images/${fileName}`;
+  }
+
+  const { data: updatedPartner, error: updateError } = await supabase
     .from("partners")
-    .update({ ...partnerData, thumb_image: imagePath })
+    .update({
+      ...partnerData,
+      thumb_image: imagePath,
+    })
     .eq("id", partnerId)
     .select();
 
-  if (error) {
-    console.log(error.message);
-    toast.error(error.message);
+  if (updateError) {
+    console.error("Update error:", updateError);
     throw new Error("Cập nhật đối tác thất bại!");
   }
 
-  if (hasImagePath) return { updatePartner, error };
-  const { error: storageError } = await supabase.storage
-    .from("images")
-    .upload(imageName, partnerData.thumb_image, {
-      cacheControl: "3600",
-      upsert: false,
-      contentType: partnerData.thumb_image.type,
-    });
-
-  if (storageError) {
-    await supabase.from("partners").delete().eq("id", partnerData.id);
-    console.log(storageError);
-    throw new Error("Không thể tải ảnh đối tác và đối tác chưa được tạo!");
-  }
-
-  return { updatedPartner, error };
+  return { updatedPartner, error: null };
 };
 
 export const deletePartnerById = async (partnerId: number) => {

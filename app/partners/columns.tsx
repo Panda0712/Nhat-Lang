@@ -148,7 +148,7 @@ export const columns = ({
             toast.success("Đối tác đã được cập nhật thành công!");
             setIsDialogOpen(false);
           } catch (error: any) {
-            toast.error(error);
+            toast.error(error.message);
           }
         });
       };
