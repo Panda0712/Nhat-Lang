@@ -50,7 +50,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { MovieSchema } from "@/schemas";
+import { CreateMovieSchema, MovieSchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
@@ -76,15 +76,20 @@ export function DataTable<TData, TValue>({
     React.useState<VisibilityState>({});
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [isPending, startTransition] = React.useTransition();
+  const [selectedThumbFile, setSelectedThumbFile] = React.useState<File | null>(
+    null
+  );
+  const [selectedPosterFile, setSelectedPosterFile] =
+    React.useState<File | null>(null);
 
-  const form = useForm<z.infer<typeof MovieSchema>>({
-    resolver: zodResolver(MovieSchema),
+  const form = useForm<z.infer<typeof CreateMovieSchema>>({
+    resolver: zodResolver(CreateMovieSchema),
     defaultValues: {
       name: "",
       slug: "",
       original_name: "",
-      thumb_url: "",
-      poster_url: "",
+      thumb_url: undefined,
+      poster_url: undefined,
       description: "",
       total_episodes: undefined,
       current_episode: "",
@@ -115,14 +120,60 @@ export function DataTable<TData, TValue>({
     },
   });
 
+  const handleFileThumbChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        toast.error("File phải là định dạng hình ảnh!");
+        return;
+      }
+
+      setSelectedThumbFile(file);
+      form.setValue("thumb_url", file);
+    }
+  };
+
+  const handleFilePosterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        toast.error("File phải là định dạng hình ảnh!");
+        return;
+      }
+
+      setSelectedPosterFile(file);
+      form.setValue("poster_url", file);
+    }
+  };
+
   const handleCreateMovie = (values: z.infer<typeof MovieSchema>) => {
     startTransition(async () => {
       try {
-        const currentTime = formatDateTime(new Date());
-        values.created = currentTime;
-        values.modified = currentTime;
+        const updateData = {
+          ...values,
+          thumb_url: selectedThumbFile
+            ? {
+                file: selectedThumbFile,
+                name: selectedThumbFile.name,
+                type: selectedThumbFile.type,
+                size: selectedThumbFile.size,
+              }
+            : values.thumb_url,
+          poster_url: selectedPosterFile
+            ? {
+                file: selectedPosterFile,
+                name: selectedPosterFile.name,
+                type: selectedPosterFile.type,
+                size: selectedPosterFile.size,
+              }
+            : values.poster_url,
+        };
 
-        const { movie } = await insertMovie(values);
+        const currentTime = formatDateTime(new Date());
+        updateData.created = currentTime;
+        updateData.modified = currentTime;
+
+        const { movie } = await insertMovie(updateData);
         onDataChange([movie[0], ...data]);
 
         toast.success("Phim đã được thêm thành công");
@@ -326,11 +377,16 @@ export function DataTable<TData, TValue>({
                 <FormField
                   control={form.control}
                   name="thumb_url"
-                  render={({ field }) => (
+                  render={() => (
                     <FormItem>
                       <FormLabel>Ảnh phim</FormLabel>
                       <FormControl>
-                        <Input {...field} disabled={isPending} />
+                        <Input
+                          type="file"
+                          onChange={handleFileThumbChange}
+                          disabled={isPending}
+                          accept="image/*"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -340,11 +396,16 @@ export function DataTable<TData, TValue>({
                 <FormField
                   control={form.control}
                   name="poster_url"
-                  render={({ field }) => (
+                  render={() => (
                     <FormItem>
                       <FormLabel>Ảnh poster</FormLabel>
                       <FormControl>
-                        <Input {...field} disabled={isPending} />
+                        <Input
+                          type="file"
+                          onChange={handleFilePosterChange}
+                          disabled={isPending}
+                          accept="image/*"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

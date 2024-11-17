@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { RegisterSchema } from "@/schemas";
-import supabase, { supabaseUrl } from "./supabase";
-import * as z from "zod";
 import toast from "react-hot-toast";
-import { Movie } from "../movies/columns";
-import { Staff } from "../staffs/columns";
+import * as z from "zod";
 import { Customer } from "../customers/columns";
+import { Staff } from "../staffs/columns";
+import supabase, { supabaseUrl } from "./supabase";
 
 export const getUserByEmail = async (email: string) => {
   try {
@@ -322,19 +321,73 @@ export const getMovieById = async (id: string) => {
 };
 
 export const updateMovie = async (movieData: any, movieId: number) => {
-  const { data: updatedMovie, error } = await supabase
+  const isExistingImage =
+    (typeof movieData.thumb_url === "string" ||
+      movieData.thumb_url?.startsWith?.(supabaseUrl)) &&
+    (typeof movieData.poster_url === "string" ||
+      movieData.poster_url?.startsWith?.(supabaseUrl));
+
+  let imageThumbPath = movieData.thumb_url;
+  let imagePosterPath = movieData.thumb_url;
+
+  if (
+    !isExistingImage &&
+    movieData.thumb_url?.file instanceof File &&
+    movieData.poster_url?.file instanceof File
+  ) {
+    const fileThumb = movieData.thumb_url.file;
+    const filePoster = movieData.poster_url.file;
+
+    const fileThumbExt = fileThumb.name.split(".").pop();
+    const fileThumbName =
+      `${Math.random()}-${Date.now()}.${fileThumbExt}`.replaceAll("/", "");
+
+    const filePosterExt = filePoster.name.split(".").pop();
+    const filePosterName =
+      `${Math.random()}-${Date.now()}.${filePosterExt}`.replaceAll("/", "");
+
+    const { error: storageError1 } = await supabase.storage
+      .from("images")
+      .upload(fileThumbName, fileThumb, {
+        cacheControl: "3600",
+        upsert: false,
+        contentType: fileThumb.type,
+      });
+
+    const { error: storageError2 } = await supabase.storage
+      .from("images")
+      .upload(filePosterName, filePoster, {
+        cacheControl: "3600",
+        upsert: false,
+        contentType: filePoster.type,
+      });
+
+    if (storageError1 || storageError2) {
+      console.error("Storage1 error:", storageError1);
+      console.error("Storage2 error:", storageError2);
+      throw new Error("Không thể tải ảnh đối tác lên storage!");
+    }
+
+    imageThumbPath = `${supabaseUrl}/storage/v1/object/public/images/${fileThumbName}`;
+    imagePosterPath = `${supabaseUrl}/storage/v1/object/public/images/${filePosterName}`;
+  }
+
+  const { data: updatedPartner, error: updateError } = await supabase
     .from("movies")
-    .update(movieData)
+    .update({
+      ...movieData,
+      thumb_url: imageThumbPath,
+      poster_url: imagePosterPath,
+    })
     .eq("id", movieId)
     .select();
 
-  if (error) {
-    console.log(error.message);
-    toast.error(error.message);
+  if (updateError) {
+    console.error("Update error:", updateError);
     throw new Error("Cập nhật phim thất bại!");
   }
 
-  return { updatedMovie, error };
+  return { updatedPartner, error: null };
 };
 
 export const deleteMovieById = async (id: number) => {
@@ -347,17 +400,73 @@ export const deleteMovieById = async (id: number) => {
   }
 };
 
-export const insertMovie = async (newData: Movie) => {
-  const { data: movie, error } = await supabase
-    .from("movies")
-    .insert([newData])
-    .select();
+export const insertMovie = async (newData: any) => {
+  const hasNewFile =
+    newData.thumb_url?.file instanceof File &&
+    newData.poster_url?.file instanceof File;
+  let imageThumbPath = newData.thumb_url;
+  let imagePosterPath = newData.poster_url;
 
-  if (error) {
-    console.log(error.message);
-    toast.error(error.message);
-    throw new Error("Thêm phim thất bại!");
+  if (hasNewFile) {
+    const fileThumb = newData.thumb_url.file;
+    const filePoster = newData.poster_url.file;
+
+    const fileThumbExt = fileThumb.name.split(".").pop();
+    const fileThumbName =
+      `${Math.random()}-${Date.now()}.${fileThumbExt}`.replaceAll("/", "");
+
+    const filePosterExt = filePoster.name.split(".").pop();
+    const filePosterName =
+      `${Math.random()}-${Date.now()}.${filePosterExt}`.replaceAll("/", "");
+
+    const { error: storageError1 } = await supabase.storage
+      .from("images")
+      .upload(fileThumbName, fileThumb, {
+        cacheControl: "3600",
+        upsert: false,
+        contentType: fileThumb.type,
+      });
+
+    const { error: storageError2 } = await supabase.storage
+      .from("images")
+      .upload(filePosterName, filePoster, {
+        cacheControl: "3600",
+        upsert: false,
+        contentType: filePoster.type,
+      });
+
+    if (storageError1 || storageError2) {
+      console.error("Storage1 error:", storageError1);
+      console.error("Storage2 error:", storageError2);
+      throw new Error("Không thể tải ảnh đối tác lên storage!");
+    }
+
+    imageThumbPath = `${supabaseUrl}/storage/v1/object/public/images/${fileThumbName}`;
+    imagePosterPath = `${supabaseUrl}/storage/v1/object/public/images/${filePosterName}`;
   }
 
-  return { movie, error };
+  const movieData = {
+    ...newData,
+    thumb_url: imageThumbPath,
+    poster_url: imagePosterPath,
+  };
+
+  const { data: movie, error: insertError } = await supabase
+    .from("movies")
+    .insert([movieData])
+    .select();
+
+  if (insertError) {
+    if (hasNewFile && imageThumbPath && imagePosterPath) {
+      const fileThumbName = imageThumbPath.split("/").pop();
+      const filePosterName = imagePosterPath.split("/").pop();
+      await supabase.storage
+        .from("images")
+        .remove([fileThumbName, filePosterName]);
+    }
+    console.error("Insert error:", insertError);
+    throw new Error("Thêm đối tác mới thất bại!");
+  }
+
+  return { movie, error: null };
 };

@@ -135,14 +135,20 @@ export const columns = ({
       const [isDialogOpen, setIsDialogOpen] = useState(false);
       const [isConfirmOpen, setIsConfirmOpen] = useState(false);
       const [isPending, startTransition] = useTransition();
+      const [selectedThumbFile, setSelectedThumbFile] = useState<File | null>(
+        null
+      );
+      const [selectedPosterFile, setSelectedPosterFile] = useState<File | null>(
+        null
+      );
 
       const form = useForm<z.infer<typeof MovieSchema>>({
         resolver: zodResolver(MovieSchema),
         defaultValues: {
           name: row.original.name,
           original_name: row.original.original_name,
-          thumb_url: row.original.thumb_url,
-          poster_url: row.original.poster_url,
+          thumb_url: undefined,
+          poster_url: undefined,
           description: row.original.description,
           modified: row.original.modified,
           total_episodes: row.original.total_episodes,
@@ -157,16 +163,72 @@ export const columns = ({
         },
       });
 
+      const handleFileThumbChange = (
+        e: React.ChangeEvent<HTMLInputElement>
+      ) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          if (!file.type.startsWith("image/")) {
+            toast.error("File phải là định dạng hình ảnh!");
+            return;
+          }
+
+          setSelectedThumbFile(file);
+          form.setValue("thumb_url", file);
+        }
+      };
+
+      const handleFilePosterChange = (
+        e: React.ChangeEvent<HTMLInputElement>
+      ) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          if (!file.type.startsWith("image/")) {
+            toast.error("File phải là định dạng hình ảnh!");
+            return;
+          }
+
+          setSelectedPosterFile(file);
+          form.setValue("poster_url", file);
+        }
+      };
+
       const handleUpdate = (values: z.infer<typeof MovieSchema>) => {
         startTransition(async () => {
           try {
-            const updateTime = formatDateTime(new Date());
-            values.modified = updateTime;
-            await updateMovie(values, row.original.id);
-            onMovieUpdate(row.original.id, {
+            const updateData = {
               ...values,
+              thumb_url: selectedThumbFile
+                ? {
+                    file: selectedThumbFile,
+                    name: selectedThumbFile.name,
+                    type: selectedThumbFile.type,
+                    size: selectedThumbFile.size,
+                  }
+                : row.original.thumb_url,
+              poster_url: selectedPosterFile
+                ? {
+                    file: selectedPosterFile,
+                    name: selectedPosterFile.name,
+                    type: selectedPosterFile.type,
+                    size: selectedPosterFile.size,
+                  }
+                : row.original.poster_url,
+            };
+
+            const updateTime = formatDateTime(new Date());
+            updateData.modified = updateTime;
+            await updateMovie(updateData, row.original.id);
+            onMovieUpdate(row.original.id, {
+              ...updateData,
               id: row.original.id,
               slug: row.original.slug,
+              thumb_url: selectedThumbFile
+                ? URL.createObjectURL(selectedThumbFile)
+                : row.original.thumb_url,
+              poster_url: selectedPosterFile
+                ? URL.createObjectURL(selectedPosterFile)
+                : row.original.poster_url,
               created: row.original.created,
               modified: updateTime,
             });
@@ -294,12 +356,27 @@ export const columns = ({
                     <FormField
                       control={form.control}
                       name="thumb_url"
-                      render={({ field }) => (
+                      render={() => (
                         <FormItem>
                           <FormLabel>Ảnh phim</FormLabel>
-                          <FormControl>
-                            <Input {...field} disabled={isPending} />
-                          </FormControl>
+                          <div className="space-y-2">
+                            <FormControl>
+                              <Input
+                                type="text"
+                                value={row.original.thumb_url}
+                                disabled
+                                className="mb-2"
+                              />
+                            </FormControl>
+                            <FormControl>
+                              <Input
+                                type="file"
+                                onChange={handleFileThumbChange}
+                                disabled={isPending}
+                                accept="image/*"
+                              />
+                            </FormControl>
+                          </div>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -308,12 +385,27 @@ export const columns = ({
                     <FormField
                       control={form.control}
                       name="poster_url"
-                      render={({ field }) => (
+                      render={() => (
                         <FormItem>
                           <FormLabel>Ảnh poster</FormLabel>
-                          <FormControl>
-                            <Input {...field} disabled={isPending} />
-                          </FormControl>
+                          <div className="space-y-2">
+                            <FormControl>
+                              <Input
+                                type="text"
+                                value={row.original.poster_url}
+                                disabled
+                                className="mb-2"
+                              />
+                            </FormControl>
+                            <FormControl>
+                              <Input
+                                type="file"
+                                onChange={handleFilePosterChange}
+                                disabled={isPending}
+                                accept="image/*"
+                              />
+                            </FormControl>
+                          </div>
                           <FormMessage />
                         </FormItem>
                       )}

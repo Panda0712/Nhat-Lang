@@ -262,7 +262,7 @@ export const columns = ({
                     <FormField
                       control={form.control}
                       name="thumb_image"
-                      render={({ field }) => (
+                      render={() => (
                         <FormItem>
                           <FormLabel>Logo</FormLabel>
                           <div className="space-y-2">
