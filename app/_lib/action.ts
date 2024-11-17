@@ -73,6 +73,37 @@ export const insertStaff = async (newData: Staff) => {
   return { staff, error };
 };
 
+export const updateStaff = async (staffData: any, staffId: number) => {
+  const { data: updatedStaff, error } = await supabase
+    .from("staff")
+    .update(staffData)
+    .eq("id", staffId)
+    .select();
+
+  if (error) {
+    console.log(error.message);
+    toast.error(error.message);
+    throw new Error("Cập nhật nhân viên thất bại!");
+  }
+
+  return { updatedStaff, error };
+};
+
+export const deleteStaffById = async (staffId: number) => {
+  const { data: staff, error } = await supabase
+    .from("staff")
+    .select("*")
+    .eq("id", Number(staffId));
+
+  if (error) {
+    console.log(error.message);
+    toast.error(error.message);
+    throw new Error("Xóa nhân viên thất bại!");
+  }
+
+  return { staff, error };
+};
+
 export const getCustomers = async () => {
   const { data: customers, error } = await supabase
     .from("customers")
@@ -103,6 +134,35 @@ export const insertCustomer = async (newData: Customer) => {
   return { customer, error };
 };
 
+export const updateCustomer = async (customerData: any, customerId: number) => {
+  const { data: updatedCustomer, error } = await supabase
+    .from("customers")
+    .update(customerData)
+    .eq("id", customerId)
+    .select();
+
+  if (error) {
+    console.log(error.message);
+    toast.error(error.message);
+    throw new Error("Cập nhật khách hàng thất bại!");
+  }
+
+  return { updatedCustomer, error };
+};
+
+export const deleteCustomerById = async (customerId: number) => {
+  const { error } = await supabase
+    .from("customers")
+    .delete()
+    .eq("id", customerId);
+
+  if (error) {
+    console.log(error.message);
+    toast.error(error.message);
+    throw new Error("Xóa khách hàng thất bại!");
+  }
+};
+
 export const getPartners = async () => {
   const { data: partners, error } = await supabase
     .from("partners")
@@ -131,6 +191,35 @@ export const insertPartner = async (newData: Partner) => {
   }
 
   return { partner, error };
+};
+
+export const updatePartner = async (partnerData: any, partnerId: number) => {
+  const { data: updatedPartner, error } = await supabase
+    .from("partners")
+    .update(partnerData)
+    .eq("id", partnerId)
+    .select();
+
+  if (error) {
+    console.log(error.message);
+    toast.error(error.message);
+    throw new Error("Cập nhật đối tác thất bại!");
+  }
+
+  return { updatedPartner, error };
+};
+
+export const deletePartnerById = async (partnerId: number) => {
+  const { error } = await supabase
+    .from("partners")
+    .delete()
+    .eq("id", partnerId);
+
+  if (error) {
+    console.log(error.message);
+    toast.error(error.message);
+    throw new Error("Xóa đối tác thất bại!");
+  }
 };
 
 export const getMovies = async () => {
