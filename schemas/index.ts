@@ -43,9 +43,10 @@ export const CreateMovieSchema = z.object({
   description: z.string().min(10, {
     message: "Hãy nhập nội dung phim và tối thiểu 10 ký tự",
   }),
-  total_episodes: z.number().min(1, {
-    message: "Hãy nhập số tập",
-  }),
+  total_episodes: z
+    .number()
+    .min(1, "Số tập phải lớn hơn hoặc bằng 0")
+    .nullable(),
   current_episode: z.string().min(4, {
     message: "Hãy nhập trạng thái và tối thiểu 4 ký tự",
   }),

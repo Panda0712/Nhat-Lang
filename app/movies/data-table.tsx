@@ -50,7 +50,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { CreateMovieSchema, MovieSchema } from "@/schemas";
+import { CreateMovieSchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
@@ -91,7 +91,7 @@ export function DataTable<TData, TValue>({
       thumb_url: undefined,
       poster_url: undefined,
       description: "",
-      total_episodes: undefined,
+      total_episodes: null,
       current_episode: "",
       time: "",
       quality: "",
@@ -146,7 +146,7 @@ export function DataTable<TData, TValue>({
     }
   };
 
-  const handleCreateMovie = (values: z.infer<typeof MovieSchema>) => {
+  const handleCreateMovie = (values: z.infer<typeof CreateMovieSchema>) => {
     startTransition(async () => {
       try {
         const updateData = {
@@ -438,16 +438,13 @@ export function DataTable<TData, TValue>({
                       <FormLabel>Số tập</FormLabel>
                       <FormControl>
                         <Input
-                          {...field}
+                          value={field.value ?? ""}
                           disabled={isPending}
                           type="number"
-                          onChange={(e) =>
-                            field.onChange(
-                              e.target.value
-                                ? Number(e.target.value)
-                                : undefined
-                            )
-                          }
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            field.onChange(value === "" ? null : Number(value));
+                          }}
                         />
                       </FormControl>
                       <FormMessage />
