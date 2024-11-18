@@ -199,36 +199,26 @@ export const columns = ({
             const updateData = {
               ...values,
               thumb_url: selectedThumbFile
-                ? {
-                    file: selectedThumbFile,
-                    name: selectedThumbFile.name,
-                    type: selectedThumbFile.type,
-                    size: selectedThumbFile.size,
-                  }
+                ? { file: selectedThumbFile }
                 : row.original.thumb_url,
               poster_url: selectedPosterFile
-                ? {
-                    file: selectedPosterFile,
-                    name: selectedPosterFile.name,
-                    type: selectedPosterFile.type,
-                    size: selectedPosterFile.size,
-                  }
+                ? { file: selectedPosterFile }
                 : row.original.poster_url,
             };
 
             const updateTime = formatDateTime(new Date());
             updateData.modified = updateTime;
-            await updateMovie(updateData, row.original.id);
+
+            const { updatedMovie } = await updateMovie(
+              updateData,
+              row.original.id
+            );
             onMovieUpdate(row.original.id, {
               ...updateData,
               id: row.original.id,
               slug: row.original.slug,
-              thumb_url: selectedThumbFile
-                ? URL.createObjectURL(selectedThumbFile)
-                : row.original.thumb_url,
-              poster_url: selectedPosterFile
-                ? URL.createObjectURL(selectedPosterFile)
-                : row.original.poster_url,
+              thumb_url: updatedMovie[0].thumb_url,
+              poster_url: updatedMovie[0].poster_url,
               created: row.original.created,
               modified: updateTime,
             });

@@ -321,61 +321,72 @@ export const getMovieById = async (id: string) => {
 };
 
 export const updateMovie = async (movieData: any, movieId: number) => {
-  try {
-    let imageThumbPath = movieData.thumb_url;
-    let imagePosterPath = movieData.poster_url;
+  const isExistingImage =
+    (typeof movieData.thumb_url === "string" ||
+      movieData.thumb_url?.startsWith?.(supabaseUrl)) &&
+    (typeof movieData.poster_url === "string" ||
+      movieData.poster_url?.startsWith?.(supabaseUrl));
 
-    const isExistingThumb =
-      typeof movieData.thumb_url === "string" &&
-      movieData.thumb_url.startsWith(supabaseUrl);
-    const isExistingPoster =
-      typeof movieData.poster_url === "string" &&
-      movieData.poster_url.startsWith(supabaseUrl);
+  let imageThumbPath = movieData.thumb_url;
+  let imagePosterPath = movieData.thumb_url;
 
-    const thumbFile = movieData.thumb_url?.file;
-    const posterFile = movieData.poster_url?.file;
+  if (
+    !isExistingImage &&
+    movieData.thumb_url?.file instanceof File &&
+    movieData.poster_url?.file instanceof File
+  ) {
+    const fileThumb = movieData.thumb_url.file;
+    const filePoster = movieData.poster_url.file;
 
-    if (!isExistingThumb && thumbFile instanceof File) {
-      imageThumbPath = await handleFileUpload(thumbFile);
+    const fileThumbExt = fileThumb.name.split(".").pop();
+    const fileThumbName =
+      `${Math.random()}-${Date.now()}.${fileThumbExt}`.replaceAll("/", "");
+
+    const filePosterExt = filePoster.name.split(".").pop();
+    const filePosterName =
+      `${Math.random()}-${Date.now()}.${filePosterExt}`.replaceAll("/", "");
+
+    const [{ error: storageError1 }, { error: storageError2 }] =
+      await Promise.all([
+        supabase.storage.from("images").upload(fileThumbName, fileThumb, {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: fileThumb.type,
+        }),
+
+        supabase.storage.from("images").upload(filePosterName, filePoster, {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: filePoster.type,
+        }),
+      ]);
+
+    if (storageError1 || storageError2) {
+      console.error("Storage1 error:", storageError1);
+      console.error("Storage2 error:", storageError2);
+      throw new Error("Không thể tải ảnh đối tác lên storage!");
     }
 
-    if (!isExistingPoster && posterFile instanceof File) {
-      imagePosterPath = await handleFileUpload(posterFile);
-    }
+    imageThumbPath = `${supabaseUrl}/storage/v1/object/public/images/${fileThumbName}`;
+    imagePosterPath = `${supabaseUrl}/storage/v1/object/public/images/${filePosterName}`;
+  }
 
-    const cleanMovieData = {
+  const { data: updatedMovie, error: updateError } = await supabase
+    .from("movies")
+    .update({
       ...movieData,
       thumb_url: imageThumbPath,
       poster_url: imagePosterPath,
-    };
+    })
+    .eq("id", movieId)
+    .select();
 
-    const { data: updatedMovie, error: updateError } = await supabase
-      .from("movies")
-      .update(cleanMovieData)
-      .eq("id", movieId)
-      .select();
-
-    if (updateError) {
-      const newFiles = [];
-      if (!isExistingThumb && imageThumbPath) {
-        newFiles.push(imageThumbPath.split("/").pop());
-      }
-      if (!isExistingPoster && imagePosterPath) {
-        newFiles.push(imagePosterPath.split("/").pop());
-      }
-
-      if (newFiles.length > 0) {
-        await supabase.storage.from("images").remove(newFiles);
-      }
-
-      throw new Error(`Cập nhật phim thất bại: ${updateError.message}`);
-    }
-
-    return { updatedMovie, error: null };
-  } catch (error) {
-    console.error("Update movie error:", error);
-    throw error;
+  if (updateError) {
+    console.error("Update error:", updateError);
+    throw new Error("Cập nhật phim thất bại!");
   }
+
+  return { updatedMovie, error: null };
 };
 
 export const deleteMovieById = async (id: number) => {
@@ -389,74 +400,71 @@ export const deleteMovieById = async (id: number) => {
 };
 
 export const insertMovie = async (newData: any) => {
-  try {
-    let imageThumbPath = newData.thumb_url;
-    let imagePosterPath = newData.poster_url;
+  const hasNewFile =
+    newData.thumb_url?.file instanceof File &&
+    newData.poster_url?.file instanceof File;
+  let imageThumbPath = newData.thumb_url;
+  let imagePosterPath = newData.poster_url;
 
-    const thumbFile = newData.thumb_url?.file;
-    const posterFile = newData.poster_url?.file;
+  if (hasNewFile) {
+    const fileThumb = newData.thumb_url.file;
+    const filePoster = newData.poster_url.file;
 
-    if (thumbFile instanceof File && posterFile instanceof File) {
-      const [thumbUrl, posterUrl] = await Promise.all([
-        handleFileUpload(thumbFile),
-        handleFileUpload(posterFile),
+    const fileThumbExt = fileThumb.name.split(".").pop();
+    const fileThumbName =
+      `${Math.random()}-${Date.now()}.${fileThumbExt}`.replaceAll("/", "");
+
+    const filePosterExt = filePoster.name.split(".").pop();
+    const filePosterName =
+      `${Math.random()}-${Date.now()}.${filePosterExt}`.replaceAll("/", "");
+
+    const [{ error: storageError1 }, { error: storageError2 }] =
+      await Promise.all([
+        supabase.storage.from("images").upload(fileThumbName, fileThumb, {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: fileThumb.type,
+        }),
+
+        supabase.storage.from("images").upload(filePosterName, filePoster, {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: filePoster.type,
+        }),
       ]);
 
-      imageThumbPath = thumbUrl;
-      imagePosterPath = posterUrl;
+    if (storageError1 || storageError2) {
+      console.error("Storage1 error:", storageError1);
+      console.error("Storage2 error:", storageError2);
+      throw new Error("Không thể tải ảnh đối tác lên storage!");
     }
 
-    const movieData = {
-      ...newData,
-      thumb_url: imageThumbPath,
-      poster_url: imagePosterPath,
-    };
+    imageThumbPath = `${supabaseUrl}/storage/v1/object/public/images/${fileThumbName}`;
+    imagePosterPath = `${supabaseUrl}/storage/v1/object/public/images/${filePosterName}`;
+  }
 
-    const { data: movie, error: insertError } = await supabase
-      .from("movies")
-      .insert([movieData])
-      .select();
+  const movieData = {
+    ...newData,
+    thumb_url: imageThumbPath,
+    poster_url: imagePosterPath,
+  };
 
-    if (insertError) {
-      if (imageThumbPath && imagePosterPath) {
-        const fileThumbName = imageThumbPath.split("/").pop();
-        const filePosterName = imagePosterPath.split("/").pop();
-        await supabase.storage
-          .from("images")
-          .remove([fileThumbName, filePosterName]);
-      }
-      throw new Error(`Thêm phim mới thất bại: ${insertError.message}`);
+  const { data: movie, error: insertError } = await supabase
+    .from("movies")
+    .insert([movieData])
+    .select();
+
+  if (insertError) {
+    if (hasNewFile && imageThumbPath && imagePosterPath) {
+      const fileThumbName = imageThumbPath.split("/").pop();
+      const filePosterName = imagePosterPath.split("/").pop();
+      await supabase.storage
+        .from("images")
+        .remove([fileThumbName, filePosterName]);
     }
-
-    return { movie, error: null };
-  } catch (error) {
-    console.error("Insert movie error:", error);
-    throw error;
-  }
-};
-
-const handleFileUpload = async (file: File) => {
-  if (!file || !(file instanceof File)) {
-    throw new Error("File không hợp lệ!");
+    console.error("Insert error:", insertError);
+    throw new Error("Thêm đối tác mới thất bại!");
   }
 
-  const fileExt = file.name.split(".").pop();
-  const fileName = `${Math.random()}-${Date.now()}.${fileExt}`.replaceAll(
-    "/",
-    ""
-  );
-
-  const { error: storageError } = await supabase.storage
-    .from("images")
-    .upload(fileName, file, {
-      cacheControl: "3600",
-      upsert: false,
-      contentType: file.type,
-    });
-
-  if (storageError) {
-    throw new Error(`Upload file thất bại: ${storageError.message}`);
-  }
-
-  return `${supabaseUrl}/storage/v1/object/public/images/${fileName}`;
+  return { movie, error: null };
 };

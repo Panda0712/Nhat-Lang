@@ -128,22 +128,18 @@ export const columns = ({
               name: values.name,
               type: values.type,
               thumb_image: selectedFile
-                ? {
-                    file: selectedFile,
-                    name: selectedFile.name,
-                    type: selectedFile.type,
-                    size: selectedFile.size,
-                  }
+                ? { file: selectedFile }
                 : row.original.thumb_image,
             };
 
-            await updatePartner(updateData, row.original.id);
+            const { updatedPartner } = await updatePartner(
+              updateData,
+              row.original.id
+            );
             onPartnerUpdate(row.original.id, {
               ...values,
               id: row.original.id,
-              thumb_image: selectedFile
-                ? URL.createObjectURL(selectedFile)
-                : row.original.thumb_image,
+              thumb_image: updatedPartner[0].thumb_image,
             });
             toast.success("Đối tác đã được cập nhật thành công!");
             setIsDialogOpen(false);

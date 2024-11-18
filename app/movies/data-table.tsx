@@ -152,20 +152,10 @@ export function DataTable<TData, TValue>({
         const updateData = {
           ...values,
           thumb_url: selectedThumbFile
-            ? {
-                file: selectedThumbFile,
-                name: selectedThumbFile.name,
-                type: selectedThumbFile.type,
-                size: selectedThumbFile.size,
-              }
+            ? { file: selectedThumbFile }
             : values.thumb_url,
           poster_url: selectedPosterFile
-            ? {
-                file: selectedPosterFile,
-                name: selectedPosterFile.name,
-                type: selectedPosterFile.type,
-                size: selectedPosterFile.size,
-              }
+            ? { file: selectedPosterFile }
             : values.poster_url,
         };
 
