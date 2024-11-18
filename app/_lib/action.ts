@@ -435,6 +435,36 @@ export const insertMovie = async (newData: any) => {
   }
 };
 
+export const getCustomerTransactions = async () => {
+  const { data: transactions, error } = await supabase
+    .from("transactions")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.log(error.message);
+    toast.error(error.message);
+    throw new Error("Lấy dữ liệu giao dịch thất bại!");
+  }
+
+  return { transactions, error };
+};
+
+export const getPartnerTransactions = async () => {
+  const { data: agreements, error } = await supabase
+    .from("movie_partner_agreements")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.log(error.message);
+    toast.error(error.message);
+    throw new Error("Lấy dữ liệu giao dịch của đối tác thất bại!");
+  }
+
+  return { agreements, error };
+};
+
 const handleFileUpload = async (file: File) => {
   if (!file || !(file instanceof File)) {
     throw new Error("File không hợp lệ!");

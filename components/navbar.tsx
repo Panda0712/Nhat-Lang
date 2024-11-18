@@ -52,6 +52,24 @@ const Navbar = () => {
             Khách hàng
           </li>
         </Link>
+        <li className="relative group">
+          <span className="text-white cursor-pointer font-medium transition-all">
+            Giao dịch
+          </span>
+          <div className="w-[70px] h-3 absolute bottom-[-10px]"></div>
+          <ul className="absolute min-w-[200px] left-[-80px] top-full mt-2 bg-[#1e293b] shadow-md rounded-md opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity z-10">
+            <Link href="/transactions/partners">
+              <li className="text-white border-b-[#dcdcdc] border-opacity-15 border-b-[1px] hover:text-[#38bdf8] px-4 py-3 text-sm cursor-pointer transition-all">
+                Giao dịch với đối tác
+              </li>
+            </Link>
+            <Link href="/transactions/customers">
+              <li className="text-white hover:text-[#38bdf8] px-4 py-3 text-sm cursor-pointer transition-all">
+                Giao dịch với khách hàng
+              </li>
+            </Link>
+          </ul>
+        </li>
         <Link href="/accounts">
           <li
             className={`text-white hover:text-[#38bdf8] font-medium cursor-pointer transition-all`}
