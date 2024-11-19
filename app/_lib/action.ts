@@ -450,6 +450,35 @@ export const getCustomerTransactions = async () => {
   return { transactions, error };
 };
 
+export const updateCustomerTransactions = async (
+  customerData: any,
+  customerId: number
+) => {
+  const { data: updatedCustomerTransactions, error } = await supabase
+    .from("transactions")
+    .update(customerData)
+    .eq("id", customerId)
+    .select();
+
+  if (error) {
+    console.log(error.message);
+    toast.error(error.message);
+    throw new Error("Cập nhật giao dịch khách hàng thất bại!");
+  }
+
+  return { updatedCustomerTransactions, error };
+};
+
+export const deleteCustomerTransactions = async (id: number) => {
+  const { error } = await supabase.from("transactions").delete().eq("id", id);
+
+  if (error) {
+    console.log(error.message);
+    toast.error(error.message);
+    throw new Error("Xóa giao dịch khách hàng thất bại!");
+  }
+};
+
 export const getPartnerTransactions = async () => {
   const { data: agreements, error } = await supabase
     .from("movie_partner_agreements")
@@ -463,6 +492,38 @@ export const getPartnerTransactions = async () => {
   }
 
   return { agreements, error };
+};
+
+export const updatePartnerTransactions = async (
+  partnerData: any,
+  partnerId: number
+) => {
+  const { data: updatedPartnerTransactions, error } = await supabase
+    .from("movie_partner_transactions")
+    .update(partnerData)
+    .eq("id", partnerId)
+    .select();
+
+  if (error) {
+    console.log(error.message);
+    toast.error(error.message);
+    throw new Error("Cập nhật giao dịch đối tác thất bại!");
+  }
+
+  return { updatedPartnerTransactions, error };
+};
+
+export const deletePartnerTransactions = async (id: number) => {
+  const { error } = await supabase
+    .from("movie_partner_agreements")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    console.log(error.message);
+    toast.error(error.message);
+    throw new Error("Xóa giao dịch đối tác thất bại!");
+  }
 };
 
 const handleFileUpload = async (file: File) => {

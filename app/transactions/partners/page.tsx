@@ -1,6 +1,5 @@
 import { getPartnerTransactions } from "@/app/_lib/action";
-import { columns } from "./columns";
-import { DataTable } from "./data-table";
+import { TransactionClientWrapper } from "./partner-update";
 
 export default async function PartnerTransactionsPage() {
   const { agreements } = await getPartnerTransactions();
@@ -10,7 +9,7 @@ export default async function PartnerTransactionsPage() {
       <h1 className="sm:text-2xl text-base mb-12 mx-auto font-semibold text-center uppercase">
         Danh sách giao dịch đối tác
       </h1>
-      <DataTable columns={columns} data={agreements} />
+      <TransactionClientWrapper initialTransactions={agreements} />
     </div>
   );
 }
