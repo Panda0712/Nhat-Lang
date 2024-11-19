@@ -450,6 +450,21 @@ export const getCustomerTransactions = async () => {
   return { transactions, error };
 };
 
+export const insertCustomerTransactions = async (newData: any) => {
+  const { data: customerTransaction, error } = await supabase
+    .from("transactions")
+    .insert([newData])
+    .select();
+
+  if (error) {
+    console.log(error.message);
+    toast.error(error.message);
+    throw new Error("Thêm giao dịch khách hàng mới thất bại!");
+  }
+
+  return { customerTransaction, error };
+};
+
 export const updateCustomerTransactions = async (
   customerData: any,
   customerId: number
@@ -494,12 +509,27 @@ export const getPartnerTransactions = async () => {
   return { agreements, error };
 };
 
+export const insertPartnerTransactions = async (newData: any) => {
+  const { data: partnerTransaction, error } = await supabase
+    .from("movie_partner_agreements")
+    .insert([newData])
+    .select();
+
+  if (error) {
+    console.log(error.message);
+    toast.error(error.message);
+    throw new Error("Thêm giao dịch đối tác mới thất bại!");
+  }
+
+  return { partnerTransaction, error };
+};
+
 export const updatePartnerTransactions = async (
   partnerData: any,
   partnerId: number
 ) => {
   const { data: updatedPartnerTransactions, error } = await supabase
-    .from("movie_partner_transactions")
+    .from("movie_partner_agreements")
     .update(partnerData)
     .eq("id", partnerId)
     .select();

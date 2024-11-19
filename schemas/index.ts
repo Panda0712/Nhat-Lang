@@ -161,7 +161,9 @@ export const CustomerTransactionsSchema = z.object({
   customer_id: z.number().min(1, {
     message: "Hãy nhập id của khách hàng",
   }),
-  transaction_date: z.string().optional(),
+  transaction_date: z.string().min(10, {
+    message: "Hãy nhập đúng định dạng ngày tháng năm",
+  }),
   details: z.string().min(10, {
     message: "Hãy nhập chi tiết và tối thiểu 10 ký tự",
   }),
@@ -177,7 +179,9 @@ export const PartnerTransactionsSchema = z.object({
   contract_cost: z.number().min(10000, {
     message: "Hãy nhập giá trị và tối thiểu 10000",
   }),
-  contract_date: z.string().optional(),
+  contract_date: z.string().min(10, {
+    message: "Hãy nhập đúng định dạng ngày tháng năm",
+  }),
   details: z.string().min(10, {
     message: "Hãy nhập chi tiết và tối thiểu 10 ký tự",
   }),

@@ -230,9 +230,15 @@ export const columns = ({
                           <FormLabel>Mã phim</FormLabel>
                           <FormControl>
                             <Input
-                              {...field}
-                              type="number"
+                              value={field.value ?? ""}
                               disabled={isPending}
+                              type="number"
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                field.onChange(
+                                  value === "" ? null : Number(value)
+                                );
+                              }}
                             />
                           </FormControl>
                           <FormMessage />
@@ -248,10 +254,32 @@ export const columns = ({
                           <FormLabel>Mã đối tác</FormLabel>
                           <FormControl>
                             <Input
-                              {...field}
-                              type="number"
+                              value={field.value ?? ""}
                               disabled={isPending}
+                              type="number"
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                field.onChange(
+                                  value === "" ? null : Number(value)
+                                );
+                              }}
                             />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="contract_date"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            Ngày giao dịch (định dạng: yyyy-MM-dd)
+                          </FormLabel>
+                          <FormControl>
+                            <Input {...field} disabled={isPending} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -266,9 +294,15 @@ export const columns = ({
                           <FormLabel>Chi phí</FormLabel>
                           <FormControl>
                             <Input
-                              {...field}
-                              type="number"
+                              value={field.value ?? ""}
                               disabled={isPending}
+                              type="number"
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                field.onChange(
+                                  value === "" ? null : Number(value)
+                                );
+                              }}
                             />
                           </FormControl>
                           <FormMessage />

@@ -5,26 +5,13 @@
 import * as z from "zod";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown } from "lucide-react";
-import { MoreHorizontal } from "lucide-react";
+import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useState, useTransition } from "react";
-import { useForm } from "react-hook-form";
-import { CustomerTransactionsSchema } from "@/schemas";
-import { zodResolver } from "@hookform/resolvers/zod";
 import {
   deleteCustomerTransactions,
   updateCustomerTransactions,
 } from "@/app/_lib/action";
-import toast from "react-hot-toast";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -34,6 +21,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Form,
   FormControl,
   FormField,
@@ -42,6 +36,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { CustomerTransactionsSchema } from "@/schemas";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useState, useTransition } from "react";
+import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 
 export type CustomerTransactions = {
   id: number;
@@ -223,9 +222,15 @@ export const columns = ({
                           <FormLabel>Mã phim</FormLabel>
                           <FormControl>
                             <Input
-                              {...field}
-                              type="number"
+                              value={field.value ?? ""}
                               disabled={isPending}
+                              type="number"
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                field.onChange(
+                                  value === "" ? null : Number(value)
+                                );
+                              }}
                             />
                           </FormControl>
                           <FormMessage />
@@ -241,10 +246,32 @@ export const columns = ({
                           <FormLabel>Mã khách hàng</FormLabel>
                           <FormControl>
                             <Input
-                              {...field}
-                              type="number"
+                              value={field.value ?? ""}
                               disabled={isPending}
+                              type="number"
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                field.onChange(
+                                  value === "" ? null : Number(value)
+                                );
+                              }}
                             />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="transaction_date"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            Ngày giao dịch (định dạng: yyyy-MM-dd)
+                          </FormLabel>
+                          <FormControl>
+                            <Input {...field} disabled={isPending} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

@@ -1,6 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import * as React from "react";
+
+import * as z from "zod";
 
 import {
   ColumnDef,
@@ -31,6 +34,27 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useForm } from "react-hook-form";
+import { CustomerTransactionsSchema } from "@/schemas";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { insertCustomerTransactions } from "@/app/_lib/action";
+import toast from "react-hot-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -49,6 +73,18 @@ export function DataTable<TData, TValue>({
   );
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [isPending, startTransition] = React.useTransition();
+
+  const form = useForm<z.infer<typeof CustomerTransactionsSchema>>({
+    resolver: zodResolver(CustomerTransactionsSchema),
+    defaultValues: {
+      movie_id: undefined,
+      customer_id: undefined,
+      transaction_date: "",
+      details: "",
+    },
+  });
 
   const table = useReactTable({
     data,
@@ -66,6 +102,25 @@ export function DataTable<TData, TValue>({
       columnVisibility,
     },
   });
+
+  const handleCreateTransaction = (
+    values: z.infer<typeof CustomerTransactionsSchema>
+  ) => {
+    startTransition(async () => {
+      try {
+        const { customerTransaction } = await insertCustomerTransactions(
+          values
+        );
+        onDataChange([customerTransaction[0], ...data]);
+
+        toast.success("Giao dịch khách hàng đã được thêm thành công");
+        setIsModalOpen(false);
+        form.reset();
+      } catch (error: any) {
+        toast.error(error.message);
+      }
+    });
+  };
 
   return (
     <div>
@@ -94,6 +149,12 @@ export function DataTable<TData, TValue>({
           }
           className="max-w-[250px] placeholder:text-[#dcdcdc]"
         />
+        <Button
+          onClick={() => setIsModalOpen(true)}
+          className="mx-4 bg-blue-600 hover:bg-blue-700 text-white"
+        >
+          Thêm giao dịch mới
+        </Button>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -200,6 +261,109 @@ export function DataTable<TData, TValue>({
           Sau
         </Button>
       </div>
+
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="sm:max-w-[525px]">
+          <DialogHeader>
+            <DialogTitle>Thêm giao dịch khách hàng mới</DialogTitle>
+            <DialogDescription>
+              Nhập giao dịch khách hàng mới tại đây. Ấn lưu khi hoàn thành.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(handleCreateTransaction)}
+              className="space-x-6 max-h-[400px] overflow-auto"
+            >
+              <div className="space-y-4 mb-16">
+                <FormField
+                  control={form.control}
+                  name="movie_id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Mã phim</FormLabel>
+                      <FormControl>
+                        <Input
+                          value={field.value ?? ""}
+                          disabled={isPending}
+                          type="number"
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            field.onChange(value === "" ? null : Number(value));
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="customer_id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Mã khách hàng</FormLabel>
+                      <FormControl>
+                        <Input
+                          value={field.value ?? ""}
+                          disabled={isPending}
+                          type="number"
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            field.onChange(value === "" ? null : Number(value));
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="transaction_date"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Ngày giao dịch (định dạng YYYY-MM-dd)
+                      </FormLabel>
+                      <FormControl>
+                        <Input {...field} disabled={isPending} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="details"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Chi tiết</FormLabel>
+                      <FormControl>
+                        <Input {...field} disabled={isPending} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <DialogFooter>
+                <Button
+                  className="absolute right-12 bottom-4"
+                  disabled={isPending}
+                  type="submit"
+                >
+                  Thêm nhân viên
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
