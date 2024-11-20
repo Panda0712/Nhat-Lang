@@ -1,4 +1,3 @@
-import { updateSession } from "@/utils/supabase/middleware";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // import { createServerClient } from "@supabase/ssr";
 // import { NextResponse, type NextRequest } from "next/server";
@@ -72,7 +71,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const publicPaths = ["/login", "/register", "/auth"];
 
-export async function updateSession(request: NextRequest) {
+export async function supabaseMiddleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Check if the path is public
