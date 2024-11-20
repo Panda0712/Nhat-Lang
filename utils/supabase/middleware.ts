@@ -1,3 +1,4 @@
+import { updateSession } from "@/utils/supabase/middleware";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // import { createServerClient } from "@supabase/ssr";
 // import { NextResponse, type NextRequest } from "next/server";
@@ -69,17 +70,18 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-export async function updateSession(request: NextRequest) {
-  // Danh sách các route public không cần auth
-  const publicRoutes = ["/login", "/register", "/auth"];
+const publicPaths = ["/login", "/register", "/auth"];
 
-  // Kiểm tra xem path hiện tại có phải là public route
-  const isPublicRoute = publicRoutes.some((route) =>
-    request.nextUrl.pathname.startsWith(route)
-  );
+export async function updateSession(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Check if the path is public
+  const isPublicPath = publicPaths.some((path) => pathname.startsWith(path));
 
   const response = NextResponse.next({
-    request,
+    request: {
+      headers: request.headers,
+    },
   });
 
   const supabase = createServerClient(
@@ -100,23 +102,28 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
-  // Chỉ redirect khi:
-  // 1. Không có user VÀ
-  // 2. Đang không ở public route
-  if (!user && !isPublicRoute) {
+    // Handle protected routes
+    if (!session && !isPublicPath) {
+      const redirectUrl = new URL("/login", request.url);
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    // Optional: Redirect logged in users away from auth pages
+    if (session && isPublicPath) {
+      const redirectUrl = new URL("/", request.url);
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    return response;
+  } catch (error) {
+    console.error("Auth error:", error);
+    // On error, redirect to login
     const redirectUrl = new URL("/login", request.url);
     return NextResponse.redirect(redirectUrl);
   }
-
-  // Nếu có user và đang ở public route, redirect về home
-  if (user && isPublicRoute) {
-    const redirectUrl = new URL("/", request.url);
-    return NextResponse.redirect(redirectUrl);
-  }
-
-  return response;
 }
