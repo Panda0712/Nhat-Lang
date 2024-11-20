@@ -1,8 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DataTable } from "./data-table";
 import { columns, Staff } from "./columns";
+import { redirect } from "next/navigation";
+import { getUserByEmail } from "../_lib/action";
+import { createClient } from "@/utils/supabase/client";
 
 type StaffClientWrapperProps = {
   initialStaffs: Staff[];
@@ -10,6 +14,7 @@ type StaffClientWrapperProps = {
 
 export function StaffClientWrapper({ initialStaffs }: StaffClientWrapperProps) {
   const [staffs, setStaffs] = useState<Staff[]>(initialStaffs);
+  const [userData, setUserData] = useState<any>(null);
 
   const handleStaffDelete = (staffId: number) => {
     setStaffs((prevStaffs) =>
@@ -27,11 +32,30 @@ export function StaffClientWrapper({ initialStaffs }: StaffClientWrapperProps) {
     setStaffs(newData);
   };
 
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        redirect("/login");
+      }
+
+      const userData = await getUserByEmail(user.email ?? "");
+      setUserData(userData);
+    };
+
+    fetchUserData();
+  }, []);
+
   return (
     <DataTable
       columns={columns({
         onStaffDelete: handleStaffDelete,
         onStaffUpdate: handleStaffUpdate,
+        userRole: userData?.role || "USER",
       })}
       data={staffs}
       onDataChange={handleDataChange}

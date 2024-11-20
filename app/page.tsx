@@ -1,15 +1,28 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { createClient } from "@/utils/supabase/server";
 import { Oswald } from "next/font/google";
 import Image from "next/image";
+import Link from "next/link";
+import { redirect } from "next/navigation";
 import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
 import { colors } from "./_constants/color";
-import Link from "next/link";
 
 export const font = Oswald({
   subsets: ["latin"],
   weight: ["400", "700"],
 });
 
-const page = () => {
+export default async function page() {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return redirect("/login");
+  }
+
   return (
     <main
       className={`flex text-white h-full py-12 flex-col items-center justify-center ${font.className}`}
@@ -125,6 +138,4 @@ const page = () => {
       </div>
     </main>
   );
-};
-
-export default page;
+}

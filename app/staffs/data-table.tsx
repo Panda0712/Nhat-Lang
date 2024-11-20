@@ -54,7 +54,9 @@ import { StaffSchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { insertStaff } from "../_lib/action";
+import { getUserByEmail, insertStaff } from "../_lib/action";
+import { createClient } from "@/utils/supabase/client";
+import { redirect } from "next/navigation";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -75,6 +77,7 @@ export function DataTable<TData, TValue>({
     React.useState<VisibilityState>({});
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [isPending, startTransition] = React.useTransition();
+  const [userData, setUserData] = React.useState<any>(null);
 
   const form = useForm<z.infer<typeof StaffSchema>>({
     resolver: zodResolver(StaffSchema),
@@ -117,6 +120,24 @@ export function DataTable<TData, TValue>({
     });
   };
 
+  React.useEffect(() => {
+    const fetchUserData = async () => {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        redirect("/login");
+      }
+
+      const userData = await getUserByEmail(user.email ?? "");
+      setUserData(userData);
+    };
+
+    fetchUserData();
+  }, []);
+
   return (
     <div>
       <div className="flex items-center py-4">
@@ -139,12 +160,16 @@ export function DataTable<TData, TValue>({
           }
           className="max-w-[250px] placeholder:text-[#dcdcdc]"
         />
-        <Button
-          onClick={() => setIsModalOpen(true)}
-          className="mx-4 bg-blue-600 hover:bg-blue-700 text-white"
-        >
-          Thêm nhân viên mới
-        </Button>
+        {userData?.role !== "ADMIN" ? (
+          <></>
+        ) : (
+          <Button
+            onClick={() => setIsModalOpen(true)}
+            className="mx-4 bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            Thêm nhân viên mới
+          </Button>
+        )}
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

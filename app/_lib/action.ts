@@ -11,7 +11,8 @@ export const getUserByEmail = async (email: string) => {
     const { data: user, error } = await supabase
       .from("users")
       .select("*")
-      .eq("email", email);
+      .eq("email", email)
+      .single();
 
     if (error) {
       toast.error(error.message);

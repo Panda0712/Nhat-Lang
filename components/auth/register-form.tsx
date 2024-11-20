@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { register } from "@/actions/register";
+import { signup } from "@/app/(auth)/login/actions";
 import { RegisterSchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useTransition } from "react";
@@ -38,11 +39,18 @@ const RegisterForm = () => {
     setError("");
     setSuccess("");
 
-    startTransition(() => {
-      register(values).then((data) => {
-        setError(data.error);
-        setSuccess(data.success);
-      });
+    startTransition(async () => {
+      try {
+        await signup(values);
+        setSuccess("Đăng ký thành công");
+
+        window.location.href = "/login";
+      } catch (error: any) {
+        setError(error.message || "Lỗi đăng ký");
+        if (error.response?.status === 401) {
+          setError("Lỗi đăng ký tài khoản");
+        }
+      }
     });
   };
 
@@ -50,8 +58,7 @@ const RegisterForm = () => {
     <CardWrapper
       headerLabel="Tạo tài khoản mới"
       backButtonLabel="Đã có tài khoản?"
-      backButtonHref="/auth/login"
-      showSocial
+      backButtonHref="/login"
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
