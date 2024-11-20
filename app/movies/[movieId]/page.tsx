@@ -4,15 +4,14 @@ import { extractYear } from "@/app/_lib/helpers";
 import Image from "next/image";
 import React from "react";
 
-type MovieDetailParam = {
-  movieId: string;
+type Props = {
+  params: {
+    movieId: string;
+  };
+  searchParams: { [key: string]: string | string[] | undefined };
 };
 
-interface PageProps {
-  params: MovieDetailParam;
-}
-
-const MovieDetailsPage = async ({ params }: PageProps) => {
+const MovieDetailsPage = async ({ params, searchParams }: Props) => {
   const { movie } = await getMovieById(params.movieId);
 
   return (
