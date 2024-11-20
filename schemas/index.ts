@@ -143,6 +143,7 @@ export const PartnerSchema = z.object({
 });
 
 export const CustomerSchema = z.object({
+  id: z.string().optional(),
   name: z.string().min(4, {
     message: "Hãy nhập tên và tối thiểu 4 ký tự",
   }),

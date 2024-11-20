@@ -2,8 +2,6 @@
 import { RegisterSchema } from "@/schemas";
 import toast from "react-hot-toast";
 import * as z from "zod";
-import { Customer } from "../customers/columns";
-import { Staff } from "../staffs/columns";
 import supabase, { supabaseUrl } from "./supabase";
 
 export const getUserByEmail = async (email: string) => {
@@ -57,7 +55,7 @@ export const getStaffs = async () => {
   return { staff, error };
 };
 
-export const insertStaff = async (newData: Staff) => {
+export const insertStaff = async (newData: any) => {
   const { data: staff, error } = await supabase
     .from("staff")
     .insert([newData])
@@ -118,7 +116,7 @@ export const getCustomers = async () => {
   return { customers, error };
 };
 
-export const insertCustomer = async (newData: Customer) => {
+export const insertCustomer = async (newData: any) => {
   const { data: customer, error } = await supabase
     .from("customers")
     .insert([newData])
