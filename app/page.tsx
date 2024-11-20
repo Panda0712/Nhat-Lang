@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createClient } from "@/utils/supabase/server";
+// import { createClient } from "@/utils/supabase/server";
 import { Oswald } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
-import { redirect } from "next/navigation";
+// import { redirect } from "next/navigation";
 import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
 import { colors } from "./_constants/color";
 
@@ -13,15 +13,15 @@ const font = Oswald({
 });
 
 export default async function page() {
-  const supabase = await createClient();
+  // const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // const {
+  //   data: { user },
+  // } = await supabase.auth.getUser();
 
-  if (!user) {
-    return redirect("/login");
-  }
+  // if (!user) {
+  //   return redirect("/login");
+  // }
 
   return (
     <main

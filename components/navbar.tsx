@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { getUserByEmail } from "@/app/_lib/action";
-import { redirect } from "next/navigation";
+// import { redirect } from "next/navigation";
 
 export default async function Navbar() {
   const supabase = await createClient();
@@ -13,11 +13,11 @@ export default async function Navbar() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    return redirect("/login");
-  }
+  // if (!user) {
+  //   return redirect("/login");
+  // }
 
-  const userData = await getUserByEmail(user.email ?? "");
+  const userData = await getUserByEmail(user?.email ?? "");
 
   return (
     <nav className="flex border-b-2 border-[#94a3b8] border-opacity-15 py-6 px-4 items-center justify-around sm:gap-x-6 gap-x-4">
