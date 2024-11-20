@@ -3,11 +3,11 @@ import { extractYear } from "@/app/_lib/helpers";
 import Image from "next/image";
 import React from "react";
 
-type MovieDetailParam = {
-  movieId: string;
-};
-
-const MovieDetailsPage = async ({ params }: { params: MovieDetailParam }) => {
+const MovieDetailsPage = async ({
+  params,
+}: {
+  params: { movieId: string };
+}) => {
   const { movie } = await getMovieById(params.movieId);
 
   return (
