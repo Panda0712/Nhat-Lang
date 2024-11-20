@@ -8,10 +8,9 @@ type Props = {
   params: {
     movieId: string;
   };
-  searchParams: { [key: string]: string | string[] | undefined };
 };
 
-const MovieDetailsPage = async ({ params, searchParams }: Props) => {
+const MovieDetailsPage = async ({ params }: Props) => {
   const { movie } = await getMovieById(params.movieId);
 
   return (
