@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
 import { colors } from "./_constants/color";
 
-export const font = Oswald({
+const font = Oswald({
   subsets: ["latin"],
   weight: ["400", "700"],
 });
