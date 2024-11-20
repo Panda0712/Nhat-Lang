@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { getUserByEmail } from "@/app/_lib/action";
-// import { redirect } from "next/navigation";
 
 export default async function Navbar() {
   const supabase = await createClient();
@@ -12,10 +11,6 @@ export default async function Navbar() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  // if (!user) {
-  //   return redirect("/login");
-  // }
 
   const userData = await getUserByEmail(user?.email ?? "");
 
@@ -53,7 +48,7 @@ export default async function Navbar() {
             Đối tác
           </li>
         </Link>
-        {userData.role === "USER" ? (
+        {userData?.role === "USER" ? (
           <></>
         ) : (
           <>
