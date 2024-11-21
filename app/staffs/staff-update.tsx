@@ -41,11 +41,7 @@ export function StaffClientWrapper({ initialStaffs }: StaffClientWrapperProps) {
           data: { user },
         } = await supabase.auth.getUser();
 
-        if (!user) {
-          redirect("/login");
-        }
-
-        const userData = await getUserByEmail(user.email ?? "");
+        const userData = await getUserByEmail(user?.email ?? "");
         setUserData(userData);
       } catch (error) {
         console.error("Error fetching user data:", error);
