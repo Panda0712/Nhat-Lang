@@ -15,6 +15,7 @@ type StaffClientWrapperProps = {
 export function StaffClientWrapper({ initialStaffs }: StaffClientWrapperProps) {
   const [staffs, setStaffs] = useState<Staff[]>(initialStaffs);
   const [userData, setUserData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const handleStaffDelete = (staffId: number) => {
     setStaffs((prevStaffs) =>
@@ -34,28 +35,39 @@ export function StaffClientWrapper({ initialStaffs }: StaffClientWrapperProps) {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      try {
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
 
-      if (!user) {
+        if (!user) {
+          redirect("/login");
+        }
+
+        const userData = await getUserByEmail(user.email ?? "");
+        setUserData(userData);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
         redirect("/login");
+      } finally {
+        setIsLoading(false);
       }
-
-      const userData = await getUserByEmail(user.email ?? "");
-      setUserData(userData);
     };
 
     fetchUserData();
   }, []);
+
+  if (isLoading) {
+    return <div>Đang tải...</div>;
+  }
 
   return (
     <DataTable
       columns={columns({
         onStaffDelete: handleStaffDelete,
         onStaffUpdate: handleStaffUpdate,
-        userRole: userData?.role,
+        userRole: userData?.role || "USER",
       })}
       data={staffs}
       onDataChange={handleDataChange}
