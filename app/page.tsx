@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// import { createClient } from "@/utils/supabase/server";
 import { Oswald } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
@@ -13,16 +12,6 @@ const font = Oswald({
 });
 
 export default async function page() {
-  // const supabase = await createClient();
-
-  // const {
-  //   data: { user },
-  // } = await supabase.auth.getUser();
-
-  // if (!user) {
-  //   return redirect("/login");
-  // }
-
   return (
     <main
       className={`flex text-white h-full py-12 flex-col items-center justify-center ${font.className}`}

@@ -1,20 +1,8 @@
-// import { createClient } from "@/utils/supabase/server";
 import { getCustomers } from "../_lib/action";
 import { CustomerClientWrapper } from "./customer-update";
-// import { redirect } from "next/navigation";
 
 export default async function CustomerPage() {
   const { customers } = await getCustomers();
-
-  // const supabase = await createClient();
-
-  // const {
-  //   data: { user },
-  // } = await supabase.auth.getUser();
-
-  // if (!user) {
-  //   return redirect("/");
-  // }
 
   return (
     <div className="container text-white mx-auto max-w-[90%] pt-8 pb-20">
