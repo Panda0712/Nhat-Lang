@@ -170,7 +170,6 @@ export function DataTable<TData, TValue>({
             Thêm nhân viên mới
           </Button>
         )}
-
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto text-black">
