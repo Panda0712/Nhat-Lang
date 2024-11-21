@@ -2,7 +2,6 @@
 import { Oswald } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
-// import { redirect } from "next/navigation";
 import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
 import { colors } from "./_constants/color";
 
