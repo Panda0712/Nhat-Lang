@@ -54,17 +54,17 @@ import { StaffSchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { getUserByEmail, insertStaff } from "../_lib/action";
-import { createClient } from "@/utils/supabase/client";
-import { redirect } from "next/navigation";
+import { insertStaff } from "../_lib/action";
 
 interface DataTableProps<TData, TValue> {
+  userData: any;
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   onDataChange: (newData: TData[]) => void;
 }
 
 export function DataTable<TData, TValue>({
+  userData,
   columns,
   data,
   onDataChange,
@@ -77,7 +77,6 @@ export function DataTable<TData, TValue>({
     React.useState<VisibilityState>({});
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [isPending, startTransition] = React.useTransition();
-  const [userData, setUserData] = React.useState<any>(null);
 
   const form = useForm<z.infer<typeof StaffSchema>>({
     resolver: zodResolver(StaffSchema),
@@ -119,24 +118,6 @@ export function DataTable<TData, TValue>({
       }
     });
   };
-
-  React.useEffect(() => {
-    const fetchUserData = async () => {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        redirect("/login");
-      }
-
-      const userData = await getUserByEmail(user.email ?? "");
-      setUserData(userData);
-    };
-
-    fetchUserData();
-  }, []);
 
   return (
     <div>

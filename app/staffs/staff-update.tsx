@@ -34,6 +34,7 @@ export function StaffClientWrapper({
 
   return (
     <DataTable
+      userData={userData}
       columns={columns({
         onStaffDelete: handleStaffDelete,
         onStaffUpdate: handleStaffUpdate,
