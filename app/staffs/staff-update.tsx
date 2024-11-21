@@ -55,7 +55,7 @@ export function StaffClientWrapper({ initialStaffs }: StaffClientWrapperProps) {
       columns={columns({
         onStaffDelete: handleStaffDelete,
         onStaffUpdate: handleStaffUpdate,
-        userRole: userData?.role || "USER",
+        userRole: userData?.role,
       })}
       data={staffs}
       onDataChange={handleDataChange}
