@@ -168,6 +168,9 @@ export const CustomerTransactionsSchema = z.object({
   details: z.string().min(10, {
     message: "Hãy nhập chi tiết và tối thiểu 10 ký tự",
   }),
+  transaction_cost: z.number().min(10000, {
+    message: "Hãy nhập giá trị và tối thiểu 10000",
+  }),
 });
 
 export const PartnerTransactionsSchema = z.object({

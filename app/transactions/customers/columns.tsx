@@ -48,6 +48,7 @@ export type CustomerTransactions = {
   customer_id: number;
   transaction_date: string;
   details: string;
+  transaction_cost: number;
 };
 
 type TableProps = {
@@ -98,6 +99,10 @@ export const columns = ({
   {
     accessorKey: "details",
     header: "Chi tiết",
+  },
+  {
+    accessorKey: "transaction_cost",
+    header: "Chi phí",
   },
   {
     id: "actions",

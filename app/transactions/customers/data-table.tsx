@@ -83,6 +83,7 @@ export function DataTable<TData, TValue>({
       customer_id: undefined,
       transaction_date: "",
       details: "",
+      transaction_cost: undefined,
     },
   });
 
@@ -349,6 +350,28 @@ export function DataTable<TData, TValue>({
                     </FormItem>
                   )}
                 />
+
+                <FormField
+                  control={form.control}
+                  name="transaction_cost"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Chi phí</FormLabel>
+                      <FormControl>
+                        <Input
+                          value={field.value ?? ""}
+                          disabled={isPending}
+                          type="number"
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            field.onChange(value === "" ? null : Number(value));
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               <DialogFooter>
@@ -357,7 +380,7 @@ export function DataTable<TData, TValue>({
                   disabled={isPending}
                   type="submit"
                 >
-                  Thêm nhân viên
+                  Thêm giao dịch
                 </Button>
               </DialogFooter>
             </form>
